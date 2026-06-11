@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบข้อมูลโรงเรียนเรียนรวม จังหวัดสงขลา</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --primary: #1a4f8a;
+    --primary-light: #2563a8;
+    --primary-50: #e8f0fb;
+    --accent: #0d7c5f;
+    --accent-light: #e6f5f0;
+    --amber: #b87714;
+    --amber-light: #fef3db;
+    --coral: #c04a2a;
+    --coral-light: #fbeae5;
+    --purple: #5b41b0;
+    --purple-light: #f0edfb;
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a2e;
+    --text-muted: #5a6175;
+    --text-hint: #9299a8;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.07);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; }
+
+  /* HEADER */
+  .app-header { background: var(--primary); color: #fff; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .app-header h1 { font-size: 16px; font-weight: 600; letter-spacing: 0.01em; }
+  .app-header .subtitle { font-size: 12px; opacity: 0.75; margin-top: 1px; }
+  .header-badge { background: rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 12px; font-size: 12px; }
+
+  /* NAV */
+  .nav-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; gap: 4px; overflow-x: auto; position: sticky; top: 60px; z-index: 90; }
+  .nav-tab { padding: 14px 16px; font-size: 14px; font-weight: 500; color: var(--text-muted); border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; font-family: 'Sarabun', sans-serif; transition: color 0.15s; }
+  .nav-tab:hover { color: var(--primary); }
+  .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  /* LAYOUT */
+  .main { max-width: 1280px; margin: 0 auto; padding: 24px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* SUMMARY CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; }
+  .stat-card .label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-card .value { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1; }
+  .stat-card .unit { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .stat-card.accent-blue { border-left: 3px solid var(--primary); }
+  .stat-card.accent-green { border-left: 3px solid var(--accent); }
+  .stat-card.accent-amber { border-left: 3px solid var(--amber); }
+  .stat-card.accent-coral { border-left: 3px solid var(--coral); }
+
+  /* SECTOR OVERVIEW CARDS */
+  .sector-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .sector-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 20px; cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
+  .sector-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary); }
+  .sector-card .sec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .sector-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .sec-icon-blue { background: var(--primary-50); color: var(--primary); }
+  .sec-icon-green { background: var(--accent-light); color: var(--accent); }
+  .sec-icon-amber { background: var(--amber-light); color: var(--amber); }
+  .sec-icon-coral { background: var(--coral-light); color: var(--coral); }
+  .sector-card .sec-name { font-weight: 600; font-size: 15px; }
+  .sector-card .sec-sub { font-size: 12px; color: var(--text-muted); }
+  .sec-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sec-stat { background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+  .sec-stat .s-label { font-size: 11px; color: var(--text-hint); margin-bottom: 3px; }
+  .sec-stat .s-val { font-size: 16px; font-weight: 600; }
+  .pct-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; }
+  .pct-fill { height: 4px; border-radius: 2px; background: var(--primary); }
+
+  /* SECTION HEADER */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-header h2 { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .section-header .breadcrumb { font-size: 13px; color: var(--text-muted); }
+
+  /* BTN */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Sarabun', sans-serif; border: none; transition: opacity 0.15s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-outline { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); }
+  .btn-outline:hover { background: var(--bg); }
+  .btn-danger { background: #fdf2f2; color: var(--coral); border: 1px solid #f5c6c6; }
+  .btn-danger:hover { background: #fbeae5; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* SUB-SECTOR TABS */
+  .sub-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .sub-tab { padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-muted); font-family: 'Sarabun', sans-serif; }
+  .sub-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* TABLE */
+  .table-wrap { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; }
+  .table-toolbar { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); gap: 12px; }
+  .search-box { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; flex: 1; max-width: 320px; }
+  .search-box input { border: none; background: none; outline: none; font-family: 'Sarabun', sans-serif; font-size: 14px; width: 100%; color: var(--text); }
+  .search-box i { color: var(--text-hint); font-size: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--bg); padding: 11px 14px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(26,79,138,0.03); }
+  .pct-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .pct-high { background: #e6f5f0; color: #0d7c5f; }
+  .pct-mid { background: #fef3db; color: #b87714; }
+  .pct-low { background: #fbeae5; color: #c04a2a; }
+  .action-btns { display: flex; gap: 6px; }
+  .no-data { padding: 48px; text-align: center; color: var(--text-muted); }
+  .no-data i { font-size: 36px; margin-bottom: 12px; display: block; opacity: 0.4; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: var(--radius-lg); padding: 28px; width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 20px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
+  .form-group input { width: 100%; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: 8px; font-family: 'Sarabun', sans-serif; font-size: 14px; outline: none; background: var(--surface); color: var(--text); }
+  .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,79,138,0.1); }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+  /* STATS PAGE */
+  .ranking-section { margin-bottom: 28px; }
+  .ranking-section h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .rank-list { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; }
+  .rank-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); gap: 14px; }
+  .rank-item:last-child { border-bottom: none; }
+  .rank-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .rank-1 { background: #fef3db; color: #b87714; }
+  .rank-2 { background: #f0f0f2; color: #5a6175; }
+  .rank-3 { background: #fbeae5; color: #c04a2a; }
+  .rank-n { background: var(--bg); color: var(--text-muted); }
+  .rank-info { flex: 1; min-width: 0; }
+  .rank-school { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-sector-tag { font-size: 11px; color: var(--text-hint); margin-top: 1px; }
+  .rank-bar-wrap { flex: 1; max-width: 200px; }
+  .rank-bar-bg { height: 6px; background: var(--border); border-radius: 3px; }
+  .rank-bar-fg { height: 6px; border-radius: 3px; background: var(--primary); }
+  .rank-val { font-size: 14px; font-weight: 600; min-width: 52px; text-align: right; color: var(--primary); }
+
+  /* LOADING */
+  .loading { display: flex; align-items: center; justify-content: center; padding: 48px; color: var(--text-muted); gap: 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+  /* CONFIG */
+  .config-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 24px; max-width: 560px; }
+  .config-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .config-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; }
+  .config-input { display: flex; gap: 10px; }
+  .config-input input { flex: 1; padding: 9px 14px; border: 1px solid var(--border-strong); border-radius: 8px; font-family: 'Sarabun', sans-serif; font-size: 14px; outline: none; }
+  .config-input input:focus { border-color: var(--primary); }
+  .url-saved { font-size: 13px; color: var(--accent); margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+
+  @media (max-width: 768px) {
+    .main { padding: 16px; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .rank-bar-wrap { display: none; }
+    th:nth-child(n+5) { display: none; }
+    td:nth-child(n+5) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div id="logo-wrap" style="display:none"><img id="logo-img" style="height:44px;width:44px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,0.15);padding:2px"></div>
+    <div>
+      <h1><i class="ti ti-school" style="margin-right:6px" id="header-icon"></i><span id="header-title">ระบบข้อมูลโรงเรียนเรียนรวม</span></h1>
+      <div class="subtitle" id="header-subtitle">จังหวัดสงขลา · ศูนย์การศึกษาพิเศษ เขตการศึกษา 3</div>
+    </div>
+  </div>
+  <div class="header-badge"><i class="ti ti-refresh" id="sync-icon" style="font-size:12px;margin-right:4px"></i><span id="sync-status">พร้อมใช้งาน</span></div>
+</header>
+
+<nav class="nav-bar">
+  <button class="nav-tab active" onclick="showPage('overview')"><i class="ti ti-layout-dashboard" style="margin-right:5px"></i>ภาพรวม</button>
+  <button class="nav-tab" onclick="showPage('spp')"><i class="ti ti-building-school" style="margin-right:5px"></i>สพป.</button>
+  <button class="nav-tab" onclick="showPage('spm')"><i class="ti ti-building" style="margin-right:5px"></i>สพม.</button>
+  <button class="nav-tab" onclick="showPage('skr')"><i class="ti ti-users" style="margin-right:5px"></i>สกร.</button>
+  <button class="nav-tab" onclick="showPage('sch')"><i class="ti ti-certificate" style="margin-right:5px"></i>สช.</button>
+  <button class="nav-tab" onclick="showPage('stats')"><i class="ti ti-chart-bar" style="margin-right:5px"></i>สถิติ</button>
+  <button class="nav-tab" onclick="showPage('config')" style="margin-left:auto"><i class="ti ti-settings" style="margin-right:5px"></i>ตั้งค่า</button>
+</nav>
+
+<main class="main">
+
+  <!-- ===== OVERVIEW PAGE ===== -->
+  <div class="page active" id="page-overview">
+    <div class="stat-grid" id="overview-stats">
+      <div class="stat-card accent-blue"><div class="label"><i class="ti ti-school" style="font-size:13px;margin-right:4px"></i>โรงเรียนทั้งหมด</div><div class="value" id="ov-schools">—</div><div class="unit">แห่ง</div></div>
+      <div class="stat-card accent-blue"><div class="label"><i class="ti ti-users" style="font-size:13px;margin-right:4px"></i>นักเรียนทั้งหมด</div><div class="value" id="ov-students">—</div><div class="unit">คน</div></div>
+      <div class="stat-card accent-green"><div class="label"><i class="ti ti-clipboard-check" style="font-size:13px;margin-right:4px"></i>นักเรียนในระบบ SET</div><div class="value" id="ov-set">—</div><div class="unit">คน</div></div>
+      <div class="stat-card accent-amber"><div class="label"><i class="ti ti-ticket" style="font-size:13px;margin-right:4px"></i>ขอรับคูปองการศึกษา</div><div class="value" id="ov-coupon">—</div><div class="unit">คน</div></div>
+      <div class="stat-card accent-green"><div class="label">% SET ต่อนักเรียนทั้งหมด</div><div class="value" id="ov-pct-set">—</div><div class="unit">%</div></div>
+      <div class="stat-card accent-amber"><div class="label">% คูปองต่อนักเรียนทั้งหมด</div><div class="value" id="ov-pct-coupon">—</div><div class="unit">%</div></div>
+    </div>
+
+    <div class="sector-cards" id="sector-overview-cards">
+      <div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>
+    </div>
+  </div>
+
+  <!-- ===== สพป PAGE ===== -->
+  <div class="page" id="page-spp">
+    <div class="section-header">
+      <h2><i class="ti ti-building-school" style="color:var(--primary)"></i>สพป.สงขลา</h2>
+    </div>
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="setSppZone('spp1')">เขต 1</button>
+      <button class="sub-tab" onclick="setSppZone('spp2')">เขต 2</button>
+      <button class="sub-tab" onclick="setSppZone('spp3')">เขต 3</button>
+    </div>
+    <div id="spp-table-wrap"></div>
+  </div>
+
+  <!-- ===== สพม PAGE ===== -->
+  <div class="page" id="page-spm">
+    <div class="section-header">
+      <h2><i class="ti ti-building" style="color:var(--primary)"></i>สพม.สงขลา</h2>
+      <button class="btn btn-primary" onclick="openAddModal('spm')"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
+    </div>
+    <div id="spm-table-wrap"></div>
+  </div>
+
+  <!-- ===== สกร PAGE ===== -->
+  <div class="page" id="page-skr">
+    <div class="section-header">
+      <h2><i class="ti ti-users" style="color:var(--primary)"></i>สกร.สงขลา</h2>
+      <button class="btn btn-primary" onclick="openAddModal('skr')"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
+    </div>
+    <div id="skr-table-wrap"></div>
+  </div>
+
+  <!-- ===== สช PAGE ===== -->
+  <div class="page" id="page-sch">
+    <div class="section-header">
+      <h2><i class="ti ti-certificate" style="color:var(--primary)"></i>สช.สงขลา</h2>
+      <button class="btn btn-primary" onclick="openAddModal('sch')"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
+    </div>
+    <div id="sch-table-wrap"></div>
+  </div>
+
+  <!-- ===== STATS PAGE ===== -->
+  <div class="page" id="page-stats">
+    <div class="section-header" style="margin-bottom:24px">
+      <h2><i class="ti ti-chart-bar" style="color:var(--primary)"></i>สถิติและการจัดอันดับ</h2>
+    </div>
+    <div id="stats-content"><div class="loading"><div class="spinner"></div>กำลังประมวลผล...</div></div>
+  </div>
+
+  <!-- ===== CONFIG PAGE ===== -->
+  <div class="page" id="page-config">
+    <div class="section-header" style="margin-bottom:24px">
+      <h2><i class="ti ti-settings" style="color:var(--primary)"></i>ตั้งค่าระบบ</h2>
+    </div>
+    <div class="config-card">
+      <h3><i class="ti ti-brand-google-drive" style="margin-right:6px;color:var(--primary)"></i>เชื่อมต่อ Google Sheet</h3>
+      <p>วาง URL ของ Google Apps Script Web App ที่ Deploy แล้ว<br>
+        <strong>วิธี Deploy:</strong> เปิด Google Sheet → Extensions → Apps Script → วางโค้ดใน Code.gs → Deploy → New deployment → Web App → Execute as: <em>Me</em> → Access: <em>Anyone</em> → Copy URL</p>
+      <div class="config-input">
+        <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/xxxx/exec" />
+        <button class="btn btn-primary" onclick="saveApiUrl()"><i class="ti ti-check"></i>บันทึก</button>
+      </div>
+      <div class="url-saved" id="url-saved-msg" style="display:none"><i class="ti ti-check-circle"></i>บันทึก URL แล้ว — คลิก "ภาพรวม" เพื่อโหลดข้อมูล</div>
+
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
+        <h3 style="margin-bottom:6px"><i class="ti ti-building" style="margin-right:6px;color:var(--primary)"></i>ชื่อหน่วยงาน</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">แสดงที่ส่วนหัวของระบบ</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="form-group" style="margin:0">
+            <label>ชื่อระบบ</label>
+            <input type="text" id="cfg-title" placeholder="ระบบข้อมูลโรงเรียนเรียนรวม" style="width:100%">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>ชื่อหน่วยงาน (แสดงใต้ชื่อระบบ)</label>
+            <input type="text" id="cfg-subtitle" placeholder="จังหวัดสงขลา · ศูนย์การศึกษาพิเศษ เขตการศึกษา 3" style="width:100%">
+          </div>
+          <button class="btn btn-primary" onclick="saveOrgName()" style="align-self:flex-start"><i class="ti ti-check"></i>บันทึกชื่อหน่วยงาน</button>
+        </div>
+      </div>
+
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
+        <h3 style="margin-bottom:6px"><i class="ti ti-photo" style="margin-right:6px;color:var(--primary)"></i>โลโก้หน่วยงาน</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">แสดงที่ส่วนหัวของระบบ รองรับ PNG, JPG, SVG</p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div id="logo-preview-cfg" style="width:60px;height:60px;border-radius:10px;border:1px dashed var(--border-strong);display:flex;align-items:center;justify-content:center;color:var(--text-hint);font-size:11px;overflow:hidden">
+            <i class="ti ti-photo" style="font-size:24px"></i>
+          </div>
+          <div>
+            <input type="file" id="logo-file" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
+            <button class="btn btn-outline" onclick="document.getElementById('logo-file').click()"><i class="ti ti-upload"></i>อัปโหลดโลโก้</button>
+            <button class="btn btn-outline btn-sm" style="margin-left:6px;color:var(--coral)" onclick="removeLogo()"><i class="ti ti-trash"></i>ลบ</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;padding:14px 16px;background:var(--amber-light);border-radius:var(--radius);border:1px solid #e8c97a;font-size:13px;color:#7a5500">
+        <strong><i class="ti ti-alert-triangle" style="margin-right:4px"></i>สำคัญ — วิธีเปิดไฟล์ที่ถูกต้อง</strong><br>
+        <div style="margin-top:8px;line-height:1.8">
+          ห้ามเปิดไฟล์ HTML โดยตรง (file://) เพราะเบราว์เซอร์จะบล็อก CORS<br>
+          ต้องเปิดผ่าน Local Server วิธีใดวิธีหนึ่งดังนี้:<br>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+            <div style="background:rgba(0,0,0,0.06);border-radius:6px;padding:8px 12px;font-family:monospace">
+              <strong>VS Code:</strong> ติดตั้ง extension "Live Server" → คลิกขวาที่ไฟล์ → Open with Live Server
+            </div>
+            <div style="background:rgba(0,0,0,0.06);border-radius:6px;padding:8px 12px;font-family:monospace">
+              <strong>Python:</strong> cd ไปที่โฟลเดอร์ไฟล์ → พิมพ์ใน Terminal:<br>
+              python -m http.server 8080<br>
+              แล้วเปิด http://localhost:8080/inclusive_education_songkhla.html
+            </div>
+            <div style="background:rgba(0,0,0,0.06);border-radius:6px;padding:8px 12px;font-family:monospace">
+              <strong>Node.js:</strong> npx serve . → เปิด http://localhost:3000
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
+        <h3 style="margin-bottom:10px"><i class="ti ti-download" style="margin-right:6px;color:var(--primary)"></i>ดาวน์โหลดโค้ด Apps Script</h3>
+        <p>นำโค้ดนี้ไปวางใน Code.gs ของ Google Apps Script</p>
+        <button class="btn btn-outline" onclick="downloadScript()"><i class="ti ti-file-code"></i>ดาวน์โหลด Code.gs</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">เพิ่มโรงเรียน</h3>
+    <div class="form-group">
+      <label>ชื่อโรงเรียน</label>
+      <input type="text" id="f-name" placeholder="เช่น โรงเรียนสงขลาวิทยา">
+    </div>
+    <div class="form-group">
+      <label>จำนวนนักเรียนทั้งหมด</label>
+      <input type="number" id="f-total" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>จำนวนนักเรียนในระบบ SET</label>
+      <input type="number" id="f-set" placeholder="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>จำนวนนักเรียนขอรับคูปองการศึกษา</label>
+      <input type="number" id="f-coupon" placeholder="0" min="0">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveModal()"><i class="ti ti-check"></i>บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SECTORS = {
+  spp1: { name: 'สพป.สงขลา เขต 1', icon: 'ti-building-school', color: 'sec-icon-blue' },
+  spp2: { name: 'สพป.สงขลา เขต 2', icon: 'ti-building-school', color: 'sec-icon-blue' },
+  spp3: { name: 'สพป.สงขลา เขต 3', icon: 'ti-building-school', color: 'sec-icon-blue' },
+  spm:  { name: 'สพม.สงขลา',       icon: 'ti-building',        color: 'sec-icon-green' },
+  skr:  { name: 'สกร.สงขลา',       icon: 'ti-users',           color: 'sec-icon-amber' },
+  sch:  { name: 'สช.สงขลา',        icon: 'ti-certificate',     color: 'sec-icon-coral' }
+};
+
+let allData = {};
+let currentSector = null;
+let editingId = null;
+let currentSppZone = 'spp1';
+let searchTerms = {};
+let apiUrl = localStorage.getItem('gs_api_url') || '';
+
+if (apiUrl) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('api-url-input').value = apiUrl;
+    loadAllData();
+  });
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'spp') renderSectorTable(currentSppZone);
+  if (name === 'spm') renderSectorTable('spm');
+  if (name === 'skr') renderSectorTable('skr');
+  if (name === 'sch') renderSectorTable('sch');
+  if (name === 'stats') renderStats();
+  if (name === 'overview') renderOverview();
+}
+
+function setSppZone(zone) {
+  currentSppZone = zone;
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  renderSectorTable(zone);
+}
+
+function jsonpRequest(url) {
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    window[cbName] = function(json) { delete window[cbName]; script.remove(); resolve(json); };
+    script.onerror = () => { script.remove(); resolve(null); };
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+    document.head.appendChild(script);
+  });
+}
+
+function loadAllData() {
+  if (!apiUrl) return;
+  setSyncStatus('กำลังโหลด...', true);
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    window[cbName] = function(json) {
+      delete window[cbName];
+      script.remove();
+      allData = json;
+      renderOverview();
+      setSyncStatus('อัปเดตแล้ว');
+      resolve();
+    };
+    script.onerror = () => {
+      setSyncStatus('เชื่อมต่อไม่ได้');
+      resolve();
+    };
+    script.src = apiUrl + '?action=getAll&callback=' + cbName;
+    document.head.appendChild(script);
+  });
+}
+
+function setSyncStatus(msg, loading) {
+  document.getElementById('sync-status').textContent = msg;
+  document.getElementById('sync-icon').className = loading ? 'ti ti-loader-2' : 'ti ti-cloud-check';
+}
+
+function calcPct(a, b) {
+  if (!b || b === 0) return 0;
+  return Math.round((a / b) * 1000) / 10;
+}
+
+function pctBadge(val) {
+  const cls = val >= 70 ? 'pct-high' : val >= 40 ? 'pct-mid' : 'pct-low';
+  return `<span class="pct-badge ${cls}">${val.toFixed(1)}%</span>`;
+}
+
+function getSectorData(key) {
+  const rows = allData[key] || [];
+  return rows.map((r, i) => ({
+    ...r,
+    id: r.id || String(i + 1),
+    totalStudents: Number(r.totalStudents) || 0,
+    setStudents: Number(r.setStudents) || 0,
+    couponStudents: Number(r.couponStudents) || 0
+  }));
+}
+
+function sectorTotals(key) {
+  const rows = getSectorData(key);
+  return rows.reduce((a, r) => ({
+    schools: a.schools + 1,
+    total: a.total + r.totalStudents,
+    set: a.set + r.setStudents,
+    coupon: a.coupon + r.couponStudents
+  }), { schools: 0, total: 0, set: 0, coupon: 0 });
+}
+
+function renderOverview() {
+  const keys = Object.keys(SECTORS);
+  let grand = { schools: 0, total: 0, set: 0, coupon: 0 };
+  keys.forEach(k => {
+    const t = sectorTotals(k);
+    grand.schools += t.schools;
+    grand.total += t.total;
+    grand.set += t.set;
+    grand.coupon += t.coupon;
+  });
+  document.getElementById('ov-schools').textContent = grand.schools.toLocaleString();
+  document.getElementById('ov-students').textContent = grand.total.toLocaleString();
+  document.getElementById('ov-set').textContent = grand.set.toLocaleString();
+  document.getElementById('ov-coupon').textContent = grand.coupon.toLocaleString();
+  document.getElementById('ov-pct-set').textContent = calcPct(grand.set, grand.total).toFixed(1);
+  document.getElementById('ov-pct-coupon').textContent = calcPct(grand.coupon, grand.total).toFixed(1);
+
+  const container = document.getElementById('sector-overview-cards');
+  if (!apiUrl) {
+    container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted)"><i class="ti ti-settings" style="font-size:32px;display:block;margin-bottom:12px;opacity:0.4"></i>กรุณาตั้งค่า URL ของ Google Sheet ก่อนใช้งาน</div>`;
+    return;
+  }
+  // Helper to render a single sector card
+  function renderSectorCard(label, keys, icon, colorCls, page, zone) {
+    const t = keys.reduce((a, k) => {
+      const s = sectorTotals(k);
+      return { schools: a.schools+s.schools, total: a.total+s.total, set: a.set+s.set, coupon: a.coupon+s.coupon };
+    }, { schools:0, total:0, set:0, coupon:0 });
+    const pctSet = calcPct(t.set, t.total);
+    const pctCoupon = calcPct(t.coupon, t.total);
+    const clickFn = zone ? `navToSectorZone('${page}','${zone}')` : `navToSector('${page}')`;
+    return `
+    <div class="sector-card" onclick="${clickFn}">
+      <div class="sec-header">
+        <div class="sector-icon ${colorCls}"><i class="ti ${icon}"></i></div>
+        <div>
+          <div class="sec-name">${label}</div>
+          <div class="sec-sub">${t.schools} โรงเรียน · ${t.total.toLocaleString()} คน</div>
+        </div>
+      </div>
+      <div class="sec-stats">
+        <div class="sec-stat">
+          <div class="s-label">ระบบ SET</div>
+          <div class="s-val">${t.set.toLocaleString()} คน</div>
+          <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pctSet,100)}%;background:#1a4f8a"></div></div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctSet.toFixed(1)}% ของนักเรียนทั้งหมด</div>
+        </div>
+        <div class="sec-stat">
+          <div class="s-label">คูปองการศึกษา</div>
+          <div class="s-val">${t.coupon.toLocaleString()} คน</div>
+          <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pctCoupon,100)}%;background:#b87714"></div></div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctCoupon.toFixed(1)}% ของนักเรียนทั้งหมด</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const sppZoneCards = [
+    renderSectorCard('สพป.สงขลา เขต 1', ['spp1'], 'ti-building-school', 'sec-icon-blue', 'spp', 'spp1'),
+    renderSectorCard('สพป.สงขลา เขต 2', ['spp2'], 'ti-building-school', 'sec-icon-blue', 'spp', 'spp2'),
+    renderSectorCard('สพป.สงขลา เขต 3', ['spp3'], 'ti-building-school', 'sec-icon-blue', 'spp', 'spp3'),
+  ].join('');
+
+  const otherCards = [
+    renderSectorCard('สพม.สงขลา', ['spm'], 'ti-building', 'sec-icon-green', 'spm', null),
+    renderSectorCard('สกร.สงขลา', ['skr'], 'ti-users', 'sec-icon-amber', 'skr', null),
+    renderSectorCard('สช.สงขลา',  ['sch'], 'ti-certificate', 'sec-icon-coral', 'sch', null),
+  ].join('');
+
+  // Overall สพป summary bar
+  const sppAll = ['spp1','spp2','spp3'].reduce((a, k) => {
+    const s = sectorTotals(k);
+    return { schools: a.schools+s.schools, total: a.total+s.total, set: a.set+s.set, coupon: a.coupon+s.coupon };
+  }, { schools:0, total:0, set:0, coupon:0 });
+
+  container.innerHTML = `
+    <div style="grid-column:1/-1">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:6px">
+          <i class="ti ti-building-school"></i>สพป.สงขลา
+          <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px">${sppAll.schools} โรงเรียน รวม ${sppAll.total.toLocaleString()} คน · SET ${calcPct(sppAll.set,sppAll.total).toFixed(1)}% · คูปอน ${calcPct(sppAll.coupon,sppAll.total).toFixed(1)}%</span>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="navToSector('spp')">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:20px">
+        ${sppZoneCards}
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:20px;margin-bottom:12px;font-size:14px;font-weight:600;color:var(--text-muted)">สังกัดอื่น</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+        ${otherCards}
+      </div>
+    </div>
+  `;
+}
+
+function navToSector(page) {
+  document.querySelectorAll('.nav-tab').forEach((t,i) => {
+    const pages = ['overview','spp','spm','skr','sch','stats','config'];
+    if (pages[i] === page) t.classList.add('active');
+    else t.classList.remove('active');
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if (page === 'spp') renderSectorTable(currentSppZone);
+  else renderSectorTable(page);
+}
+
+function navToSectorZone(page, zone) {
+  currentSppZone = zone;
+  navToSector(page);
+  setTimeout(() => {
+    document.querySelectorAll('.sub-tab').forEach(t => {
+      const fn = t.getAttribute('onclick') || '';
+      t.classList.toggle('active', fn.includes("'" + zone + "'"));
+    });
+    renderSectorTable(zone);
+  }, 30);
+}
+
+function renderSectorTable(sectorKey) {
+  const wrapId = sectorKey.startsWith('spp') ? 'spp-table-wrap' : sectorKey+'-table-wrap';
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  if (!apiUrl) { wrap.innerHTML = `<div class="no-data"><i class="ti ti-settings"></i>กรุณาตั้งค่า URL ก่อน</div>`; return; }
+  const data = getSectorData(sectorKey);
+  const term = (searchTerms[sectorKey] || '').toLowerCase();
+  const filtered = term ? data.filter(r => r.schoolName.toLowerCase().includes(term)) : data;
+
+  const addBtn = sectorKey.startsWith('spp') ? '' : '';
+
+  wrap.innerHTML = `
+  <div class="table-wrap">
+    <div class="table-toolbar">
+      <div class="search-box">
+        <i class="ti ti-search"></i>
+        <input type="text" placeholder="ค้นหาโรงเรียน..." value="${searchTerms[sectorKey]||''}" oninput="setSearch('${sectorKey}', this.value)" />
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:13px;color:var(--text-muted)">${filtered.length} โรงเรียน</span>
+        <button class="btn btn-outline btn-sm" onclick="loadAllData()"><i class="ti ti-refresh"></i>รีเฟรช</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddModal('${sectorKey}')"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
+      </div>
+    </div>
+    ${filtered.length === 0 ? `<div class="no-data"><i class="ti ti-school"></i>ยังไม่มีข้อมูลโรงเรียน<br><small style="margin-top:6px;display:block">คลิก "เพิ่มโรงเรียน" เพื่อเริ่มต้น</small></div>` : `
+    <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>ชื่อโรงเรียน</th>
+          <th>นักเรียนทั้งหมด</th>
+          <th>ระบบ SET</th>
+          <th>% SET/ทั้งหมด</th>
+          <th>คูปองการศึกษา</th>
+          <th>% คูปอน/ทั้งหมด</th>
+          <th>% คูปอน/SET</th>
+          <th>จัดการ</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map((r, i) => {
+          const p1 = calcPct(r.setStudents, r.totalStudents);
+          const p2 = calcPct(r.couponStudents, r.totalStudents);
+          const p3 = calcPct(r.couponStudents, r.setStudents);
+          return `<tr>
+            <td style="color:var(--text-hint);font-size:13px">${i+1}</td>
+            <td style="font-weight:500">${r.schoolName}</td>
+            <td>${r.totalStudents.toLocaleString()}</td>
+            <td>${r.setStudents.toLocaleString()}</td>
+            <td>${pctBadge(p1)}</td>
+            <td>${r.couponStudents.toLocaleString()}</td>
+            <td>${pctBadge(p2)}</td>
+            <td>${pctBadge(p3)}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-outline btn-sm" onclick="openEditModal('${sectorKey}','${r.id}')"><i class="ti ti-edit"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow('${sectorKey}','${r.id}')"><i class="ti ti-trash"></i></button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>`}
+  </div>`;
+}
+
+function setSearch(key, val) {
+  searchTerms[key] = val;
+  renderSectorTable(key);
+}
+
+function renderStats() {
+  const container = document.getElementById('stats-content');
+
+  // กลุ่มสังกัดทั้งหมด รวม สพป.แยกเขต
+  const STAT_GROUPS = [
+    { key: 'all',  label: 'ภาพรวมทุกสังกัด', keys: ['spp1','spp2','spp3','spm','skr','sch'] },
+    { key: 'spp1', label: 'สพป.สงขลา เขต 1',  keys: ['spp1'] },
+    { key: 'spp2', label: 'สพป.สงขลา เขต 2',  keys: ['spp2'] },
+    { key: 'spp3', label: 'สพป.สงขลา เขต 3',  keys: ['spp3'] },
+    { key: 'spm',  label: 'สพม.สงขลา',         keys: ['spm'] },
+    { key: 'skr',  label: 'สกร.สงขลา',          keys: ['skr'] },
+    { key: 'sch',  label: 'สช.สงขลา',           keys: ['sch'] },
+  ];
+
+  let currentStatGroup = 'all';
+
+  function getGroupRows(grp) {
+    const rows = [];
+    grp.keys.forEach(k => {
+      getSectorData(k).forEach(r => {
+        rows.push({ ...r, sectorKey: k, sectorName: SECTORS[k].name,
+          p1: calcPct(r.setStudents, r.totalStudents),
+          p2: calcPct(r.couponStudents, r.totalStudents),
+          p3: calcPct(r.couponStudents, r.setStudents)
+        });
+      });
+    });
+    return rows;
+  }
+
+  function renderRankTable(rows, sortFn, valFn, valLabel, color) {
+    if (rows.length === 0) return '<div class="no-data" style="padding:24px"><i class="ti ti-database-off"></i>ไม่มีข้อมูล</div>';
+    const sorted = [...rows].sort(sortFn);
+    const max = valFn(sorted[0]) || 1;
+    const showSector = currentStatGroup === 'all';
+    return `<div style="overflow-y:auto;max-height:320px;border-radius:0 0 var(--radius) var(--radius)">
+      <table style="width:100%;border-collapse:collapse">
+        <thead style="position:sticky;top:0;z-index:2">
+          <tr>
+            <th style="background:var(--bg);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);width:36px">#</th>
+            <th style="background:var(--bg);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">ชื่อโรงเรียน</th>
+            ${showSector ? '<th style="background:var(--bg);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">สังกัด</th>' : ''}
+            <th style="background:var(--bg);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);width:140px">แผนภูมิ</th>
+            <th style="background:var(--bg);padding:8px 12px;text-align:right;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);width:80px">${valLabel}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sorted.map((r, i) => {
+            const val = valFn(r);
+            const rankCls = i===0 ? 'rank-1' : i===1 ? 'rank-2' : i===2 ? 'rank-3' : 'rank-n';
+            const isPct = valLabel.includes('%');
+            const dispVal = isPct ? val.toFixed(1)+'%' : val.toLocaleString();
+            return `<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 12px"><div class="rank-num ${rankCls}" style="margin:0">${i+1}</div></td>
+              <td style="padding:9px 12px;font-size:13px;font-weight:500">${r.schoolName}</td>
+              ${showSector ? `<td style="padding:9px 12px;font-size:12px;color:var(--text-muted)">${r.sectorName}</td>` : ''}
+              <td style="padding:9px 12px">
+                <div style="background:var(--border);border-radius:3px;height:6px">
+                  <div style="background:${color};border-radius:3px;height:6px;width:${Math.min((val/Math.max(max,1))*100,100).toFixed(1)}%"></div>
+                </div>
+              </td>
+              <td style="padding:9px 12px;text-align:right;font-size:13px;font-weight:600;color:${color}">${dispVal}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  function renderGroupStats(grpKey) {
+    currentStatGroup = grpKey;
+    const grp = STAT_GROUPS.find(g => g.key === grpKey);
+    const rows = getGroupRows(grp);
+
+    // summary bar
+    const t = grp.keys.reduce((a,k) => {
+      const s = sectorTotals(k);
+      return { schools:a.schools+s.schools, total:a.total+s.total, set:a.set+s.set, coupon:a.coupon+s.coupon };
+    }, {schools:0,total:0,set:0,coupon:0});
+
+    const sections = [
+      { id:'rs1', title:'% นักเรียนในระบบ SET ต่อนักเรียนทั้งหมด', icon:'ti-clipboard-check', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% SET', color:'#1a4f8a' },
+      { id:'rs2', title:'% นักเรียนขอรับคูปองต่อนักเรียนทั้งหมด', icon:'ti-ticket', sortFn:(a,b)=>b.p2-a.p2, valFn:r=>r.p2, valLabel:'% คูปอน', color:'#b87714' },
+      { id:'rs3', title:'% นักเรียนขอรับคูปองต่อนักเรียนในระบบ SET', icon:'ti-chart-pie', sortFn:(a,b)=>b.p3-a.p3, valFn:r=>r.p3, valLabel:'% คูปอน/SET', color:'#0d7c5f' },
+      { id:'rs4', title:'จำนวนนักเรียนทั้งหมด', icon:'ti-users', sortFn:(a,b)=>b.totalStudents-a.totalStudents, valFn:r=>r.totalStudents, valLabel:'จำนวน', color:'#5b41b0' },
+    ];
+
+    document.getElementById('stats-body').innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+        <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">โรงเรียน</div>
+          <div style="font-size:20px;font-weight:600">${t.schools.toLocaleString()} <span style="font-size:12px;font-weight:400;color:var(--text-muted)">แห่ง</span></div>
+        </div>
+        <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">นักเรียนทั้งหมด</div>
+          <div style="font-size:20px;font-weight:600">${t.total.toLocaleString()} <span style="font-size:12px;font-weight:400;color:var(--text-muted)">คน</span></div>
+        </div>
+        <div style="background:#e8f0fb;border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
+          <div style="font-size:11px;color:#1a4f8a;margin-bottom:4px">% SET รวม</div>
+          <div style="font-size:20px;font-weight:600;color:#1a4f8a">${calcPct(t.set,t.total).toFixed(1)}%</div>
+        </div>
+        <div style="background:var(--amber-light);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
+          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% คูปอน รวม</div>
+          <div style="font-size:20px;font-weight:600;color:#b87714">${calcPct(t.coupon,t.total).toFixed(1)}%</div>
+        </div>
+      </div>
+      ${sections.map(s => `
+        <div class="ranking-section">
+          <h3><i class="ti ${s.icon}" style="color:${s.color}"></i>${s.title}
+            <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:6px">${rows.length} โรงเรียน</span>
+          </h3>
+          <div class="rank-list" style="overflow:hidden">
+            ${renderRankTable(rows, s.sortFn, s.valFn, s.valLabel, s.color)}
+          </div>
+        </div>`).join('')}
+    `;
+
+    // highlight active tab
+    document.querySelectorAll('.stat-group-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.grp === grpKey);
+    });
+  }
+
+  // render tab bar + body
+  container.innerHTML = `
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">
+      ${STAT_GROUPS.map(g => `<button class="stat-group-tab sub-tab${g.key==='all'?' active':''}" data-grp="${g.key}" onclick="document.querySelector('.stat-group-tab.active')?.classList.remove('active');this.classList.add('active');renderGroupStatsFn('${g.key}')">${g.label}</button>`).join('')}
+    </div>
+    <div id="stats-body"></div>
+  `;
+
+  window.renderGroupStatsFn = renderGroupStats;
+  renderGroupStats('all');
+}
+
+// MODAL
+let modalSector = null;
+
+function openAddModal(sector) {
+  modalSector = sector; editingId = null;
+  document.getElementById('modal-title').textContent = `เพิ่มโรงเรียน — ${SECTORS[sector]?.name || sector}`;
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-total').value = '';
+  document.getElementById('f-set').value = '';
+  document.getElementById('f-coupon').value = '';
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('f-name').focus();
+}
+
+function openEditModal(sector, id) {
+  const row = getSectorData(sector).find(r => String(r.id) === String(id));
+  if (!row) return;
+  modalSector = sector; editingId = id;
+  document.getElementById('modal-title').textContent = `แก้ไขโรงเรียน`;
+  document.getElementById('f-name').value = row.schoolName;
+  document.getElementById('f-total').value = row.totalStudents;
+  document.getElementById('f-set').value = row.setStudents;
+  document.getElementById('f-coupon').value = row.couponStudents;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+async function saveModal() {
+  const data = {
+    schoolName:     document.getElementById('f-name').value.trim(),
+    totalStudents:  parseInt(document.getElementById('f-total').value) || 0,
+    setStudents:    parseInt(document.getElementById('f-set').value) || 0,
+    couponStudents: parseInt(document.getElementById('f-coupon').value) || 0
+  };
+  if (!data.schoolName) { alert('กรุณากรอกชื่อโรงเรียน'); return; }
+
+  // ตรวจสอบชื่อซ้ำ
+  const existing = getSectorData(modalSector);
+  const duplicate = existing.find(r =>
+    r.schoolName.trim().toLowerCase() === data.schoolName.toLowerCase() &&
+    String(r.id) !== String(editingId)
+  );
+  if (duplicate) {
+    if (!confirm('มีโรงเรียนชื่อ "' + data.schoolName + '" อยู่แล้วในสังกัดนี้ ต้องการบันทึกซ้ำหรือไม่?')) return;
+  }
+  if (!apiUrl) { alert('กรุณาตั้งค่า URL ก่อน'); return; }
+
+  const btn = document.getElementById('modal-save-btn');
+  btn.textContent = 'กำลังบันทึก...';
+  btn.disabled = true;
+
+  try {
+    let url;
+    if (editingId) {
+      url = apiUrl + '?action=update&sector=' + modalSector + '&rowId=' + encodeURIComponent(editingId) + '&data=' + encodeURIComponent(JSON.stringify(data));
+    } else {
+      url = apiUrl + '?action=add&sector=' + modalSector + '&data=' + encodeURIComponent(JSON.stringify(data));
+    }
+    await jsonpRequest(url);
+    closeModal();
+    await loadAllData();
+    renderSectorTable(modalSector);
+  } catch(e) {
+    alert('เกิดข้อผิดพลาด: ' + e.message);
+  }
+  btn.innerHTML = '<i class="ti ti-check"></i>บันทึก';
+  btn.disabled = false;
+}
+
+async function deleteRow(sector, id) {
+  if (!confirm('ยืนยันการลบโรงเรียนนี้?')) return;
+  try {
+    await jsonpRequest(apiUrl + '?action=delete&sector=' + sector + '&rowId=' + encodeURIComponent(id));
+    await loadAllData();
+    renderSectorTable(sector);
+  } catch(e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
+}
+
+function saveOrgName() {
+  const title = document.getElementById('cfg-title').value.trim();
+  const subtitle = document.getElementById('cfg-subtitle').value.trim();
+  if (title) { localStorage.setItem('org_title', title); document.getElementById('header-title').textContent = title; }
+  if (subtitle) { localStorage.setItem('org_subtitle', subtitle); document.getElementById('header-subtitle').textContent = subtitle; }
+  alert('บันทึกชื่อหน่วยงานแล้ว');
+}
+
+function handleLogoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    localStorage.setItem('org_logo', dataUrl);
+    applyLogo(dataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyLogo(dataUrl) {
+  if (!dataUrl) return;
+  document.getElementById('logo-img').src = dataUrl;
+  document.getElementById('logo-wrap').style.display = 'block';
+  document.getElementById('header-icon').style.display = 'none';
+  const prev = document.getElementById('logo-preview-cfg');
+  if (prev) prev.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:contain">';
+}
+
+function removeLogo() {
+  localStorage.removeItem('org_logo');
+  document.getElementById('logo-wrap').style.display = 'none';
+  document.getElementById('header-icon').style.display = '';
+  const prev = document.getElementById('logo-preview-cfg');
+  if (prev) prev.innerHTML = '<i class="ti ti-photo" style="font-size:24px"></i>';
+}
+
+function saveApiUrl() {
+  const url = document.getElementById('api-url-input').value.trim();
+  if (!url) return;
+  apiUrl = url;
+  localStorage.setItem('gs_api_url', url);
+  document.getElementById('url-saved-msg').style.display = 'flex';
+  loadAllData();
+}
+
+function downloadScript() {
+  const code = `// วางทั้งหมดนี้ใน Code.gs แล้ว Deploy เป็น Web App
+const SHEET_NAME_MAP = {
+  'spp1': 'สพป.สงขลา เขต1','spp2': 'สพป.สงขลา เขต2','spp3': 'สพป.สงขลา เขต3',
+  'spm':  'สพม.สงขลา','skr':  'สกร.สงขลา','sch':  'สช.สงขลา'
+};
+const HEADERS = ['id','schoolName','totalStudents','setStudents','couponStudents'];
+function doGet(e) {
+  const p = e.parameter; const action = p.action||'getAll'; const sector = p.sector||'';
+  try {
+    if (action==='getAll') { const r={}; for(const k in SHEET_NAME_MAP) r[k]=getSheetData(k); return jsonResponse(r); }
+    if (action==='get'&&sector) return jsonResponse(getSheetData(sector));
+  } catch(err) { return jsonResponse({error:err.message}); }
+}
+function doPost(e) {
+  try {
+    const {action,sector,data,rowId}=JSON.parse(e.postData.contents);
+    if(!sector||!SHEET_NAME_MAP[sector]) return jsonResponse({error:'Invalid sector'});
+    if(action==='add'){addRow(sector,data);return jsonResponse({success:true});}
+    if(action==='update'){updateRow(sector,rowId,data);return jsonResponse({success:true});}
+    if(action==='delete'){deleteRow(sector,rowId);return jsonResponse({success:true});}
+  } catch(err){return jsonResponse({error:err.message});}
+}
+function getSheet(k){const ss=SpreadsheetApp.getActiveSpreadsheet();const name=SHEET_NAME_MAP[k];let s=ss.getSheetByName(name);if(!s){s=ss.insertSheet(name);s.appendRow(HEADERS);}return s;}
+function getSheetData(k){const s=getSheet(k);const r=s.getDataRange().getValues();if(r.length<=1)return[];return r.slice(1).map(x=>({id:x[0],schoolName:x[1],totalStudents:Number(x[2])||0,setStudents:Number(x[3])||0,couponStudents:Number(x[4])||0}));}
+function addRow(k,d){const s=getSheet(k);s.appendRow([Date.now().toString(),d.schoolName,d.totalStudents,d.setStudents,d.couponStudents]);}
+function updateRow(k,id,d){const s=getSheet(k);const r=s.getDataRange().getValues();for(let i=1;i<r.length;i++){if(String(r[i][0])===String(id)){s.getRange(i+1,2,1,4).setValues([[d.schoolName,d.totalStudents,d.setStudents,d.couponStudents]]);return;}}}
+function deleteRow(k,id){const s=getSheet(k);const r=s.getDataRange().getValues();for(let i=1;i<r.length;i++){if(String(r[i][0])===String(id)){s.deleteRow(i+1);return;}}}
+function jsonResponse(d){return ContentService.createTextOutput(JSON.stringify(d)).setMimeType(ContentService.MimeType.JSON);}`;
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(code);
+  a.download = 'Code.gs';
+  a.click();
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.addEventListener('DOMContentLoaded', () => {
+  if (apiUrl) document.getElementById('api-url-input').value = apiUrl;
+  const savedTitle = localStorage.getItem('org_title');
+  const savedSubtitle = localStorage.getItem('org_subtitle');
+  const savedLogo = localStorage.getItem('org_logo');
+  if (savedTitle) { document.getElementById('header-title').textContent = savedTitle; document.getElementById('cfg-title').value = savedTitle; }
+  if (savedSubtitle) { document.getElementById('header-subtitle').textContent = savedSubtitle; document.getElementById('cfg-subtitle').value = savedSubtitle; }
+  if (savedLogo) applyLogo(savedLogo);
+  if (!apiUrl) {
+    document.getElementById('sector-overview-cards').innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted)">
+        <i class="ti ti-settings" style="font-size:32px;display:block;margin-bottom:12px;opacity:0.4"></i>
+        <div style="font-weight:500;margin-bottom:6px">ยังไม่ได้เชื่อมต่อ Google Sheet</div>
+        <div style="font-size:13px">ไปที่ <a href="#" onclick="event.preventDefault();document.querySelectorAll('.nav-tab')[6].click()" style="color:var(--primary)">ตั้งค่า</a> เพื่อใส่ URL ของ Apps Script</div>
+      </div>`;
+  }
+});
+</script>
+</body>
+</html>
