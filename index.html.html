@@ -178,6 +178,25 @@
   .pin-btn:active { background:var(--primary);color:#fff; }
   .pin-error { color:var(--coral);font-size:13px;margin-top:8px;min-height:20px; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+  @media print {
+    body { background: #fff !important; font-size: 13px; }
+    .app-header { background: #1a4f8a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color: #fff !important; padding: 12px 20px; }
+    .nav-bar, .print-toolbar, .no-print { display: none !important; }
+    .main { padding: 0 !important; max-width: 100% !important; }
+    .print-report { display: block !important; }
+    .print-section { page-break-inside: avoid; margin-bottom: 16px; }
+    table { font-size: 11px; }
+    th { background: #e8f0fb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pct-badge { border: 1px solid #ccc !important; }
+    .print-page-break { page-break-before: always; }
+    @page { margin: 1.5cm 1.5cm; size: A4 portrait; }
+  }
+  .print-report { display: none; }
+  .print-toolbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .print-check-group { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+  .print-check { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 13px; background: var(--surface); color: var(--text-muted); transition: all 0.15s; user-select: none; }
+  .print-check.selected { background: var(--primary-50); color: var(--primary); border-color: var(--primary); font-weight: 500; }
+  .print-check input { display: none; }
   @media (max-width: 768px) {
     .main { padding: 16px; }
     .stat-grid { grid-template-columns: 1fr 1fr; }
@@ -271,8 +290,9 @@
 
   <!-- ===== STATS PAGE ===== -->
   <div class="page" id="page-stats">
-    <div class="section-header" style="margin-bottom:24px">
+    <div class="section-header no-print" style="margin-bottom:16px">
       <h2><i class="ti ti-chart-bar" style="color:var(--primary)"></i>สถิติและการจัดอันดับ</h2>
+      <button class="btn btn-primary" onclick="openPrintModal()"><i class="ti ti-printer"></i>พิมพ์รายงาน</button>
     </div>
     <div id="stats-content"><div class="loading"><div class="spinner"></div>กำลังประมวลผล...</div></div>
   </div>
@@ -303,7 +323,7 @@
       <div class="url-saved" id="url-saved-msg" style="display:none"><i class="ti ti-check-circle"></i>บันทึก URL แล้ว — คลิก "ภาพรวม" เพื่อโหลดข้อมูล</div>
       <div id="embed-hint" style="display:none;margin-top:12px;padding:12px 14px;background:#e8f0fb;border-radius:var(--radius);border:1px solid #b5d4f4;font-size:13px;color:#0c447c">
         <strong><i class="ti ti-bulb" style="margin-right:4px"></i>เพื่อให้ทุกเครื่องเชื่อมได้อัตโนมัติ</strong><br>
-        เปิดไฟล์ HTML ด้วย text editor → หาบรรทัด <code style="background:rgba(0,0,0,0.08);padding:1px 5px;border-radius:3px">const EMBEDDED_API_URL = 'https://script.google.com/macros/s/AKfycbz0zvGMnjJuG8WMdYTOnwy418TEQyn49BfjLsc7Z8Bj__6LQlPYxKBF8749CXtXxflZ0Q/exec'</code> → วาง URL ของท่านระหว่างเครื่องหมาย '' แล้วบันทึกไฟล์ใหม่ จากนั้น deploy ขึ้น GitHub Pages อีกครั้ง
+        เปิดไฟล์ HTML ด้วย text editor → หาบรรทัด <code style="background:rgba(0,0,0,0.08);padding:1px 5px;border-radius:3px">const EMBEDDED_API_URL = ''</code> → วาง URL ของท่านระหว่างเครื่องหมาย '' แล้วบันทึกไฟล์ใหม่ จากนั้น deploy ขึ้น GitHub Pages อีกครั้ง
       </div>
 
       <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
@@ -384,6 +404,53 @@
   </div>
 
 </main>
+
+<!-- PRINT MODAL -->
+<div class="modal-overlay" id="print-modal">
+  <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto">
+    <h3><i class="ti ti-printer" style="margin-right:8px;color:var(--primary)"></i>พิมพ์รายงานสถิติ</h3>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px">เลือกสังกัดที่ต้องการ</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px" id="print-sector-checks">
+        <label class="print-check selected"><input type="checkbox" value="all" checked>ภาพรวมทุกสังกัด</label>
+        <label class="print-check selected"><input type="checkbox" value="spp1" checked>สพป.เขต 1</label>
+        <label class="print-check selected"><input type="checkbox" value="spp2" checked>สพป.เขต 2</label>
+        <label class="print-check selected"><input type="checkbox" value="spp3" checked>สพป.เขต 3</label>
+        <label class="print-check selected"><input type="checkbox" value="spm" checked>สพม.</label>
+        <label class="print-check selected"><input type="checkbox" value="skr" checked>สกร.</label>
+        <label class="print-check selected"><input type="checkbox" value="sch" checked>สช.</label>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px">เลือกหัวข้อสถิติ</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px" id="print-topic-checks">
+        <label class="print-check selected"><input type="checkbox" value="summary" checked>สรุปภาพรวม</label>
+        <label class="print-check selected"><input type="checkbox" value="p1" checked>อันดับ % SET/นักเรียนทั้งหมด</label>
+        <label class="print-check selected"><input type="checkbox" value="p2" checked>อันดับ % คูปอน/นักเรียนทั้งหมด</label>
+        <label class="print-check selected"><input type="checkbox" value="p3" checked>อันดับ % คูปอน/SET</label>
+        <label class="print-check selected"><input type="checkbox" value="total" checked>อันดับจำนวนนักเรียน</label>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px">ข้อมูลบนหัวรายงาน</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input type="text" id="print-report-title" placeholder="ชื่อรายงาน เช่น รายงานข้อมูลโรงเรียนเรียนรวม" style="width:100%;padding:8px 12px;border:1px solid var(--border-strong);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;outline:none">
+        <input type="text" id="print-report-date" placeholder="วันที่ เช่น มิถุนายน 2568" style="width:100%;padding:8px 12px;border:1px solid var(--border-strong);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;outline:none">
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px">
+      <button class="btn btn-outline" onclick="document.getElementById('print-modal').classList.remove('open')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="doPrint()"><i class="ti ti-printer"></i>พิมพ์เลย</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT MODAL -->
+<div id="print-area" class="print-report"></div>
 
 <!-- PIN MODAL -->
 <div class="pin-overlay" id="pin-overlay" style="display:none">
@@ -1235,6 +1302,163 @@ function jsonResponse(d){return ContentService.createTextOutput(JSON.stringify(d
 document.getElementById('modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
+
+// ===== PRINT SYSTEM =====
+document.querySelectorAll('.print-check').forEach(label => {
+  label.addEventListener('click', () => {
+    label.classList.toggle('selected');
+    label.querySelector('input').checked = label.classList.contains('selected');
+  });
+});
+
+function openPrintModal() {
+  document.getElementById('print-modal').classList.add('open');
+  // pre-fill title & date
+  const titleEl = document.getElementById('print-report-title');
+  const dateEl = document.getElementById('print-report-date');
+  if (!titleEl.value) titleEl.value = document.getElementById('header-title').textContent;
+  if (!dateEl.value) {
+    const d = new Date();
+    const thYear = d.getFullYear() + 543;
+    const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    dateEl.value = months[d.getMonth()] + ' ' + thYear;
+  }
+}
+
+function getCheckedValues(containerId) {
+  return [...document.querySelectorAll('#' + containerId + ' input:checked')].map(i => i.value);
+}
+
+function buildPrintRankTable(rows, sortFn, valFn, valLabel, color, sectorLabel) {
+  if (!rows.length) return '<p style="color:#888;font-size:12px">ไม่มีข้อมูล</p>';
+  const sorted = [...rows].sort(sortFn);
+  const max = valFn(sorted[0]) || 1;
+  const showSector = sectorLabel === 'ภาพรวมทุกสังกัด';
+  return `<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead>
+      <tr style="background:#e8f0fb">
+        <th style="padding:6px 8px;text-align:left;border:1px solid #ccc;width:32px">#</th>
+        <th style="padding:6px 8px;text-align:left;border:1px solid #ccc">ชื่อโรงเรียน</th>
+        ${showSector ? '<th style="padding:6px 8px;text-align:left;border:1px solid #ccc;width:100px">สังกัด</th>' : ''}
+        <th style="padding:6px 8px;text-align:right;border:1px solid #ccc;width:70px">${valLabel}</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${sorted.map((r,i) => {
+        const val = valFn(r);
+        const isPct = valLabel.includes('%');
+        const dispVal = isPct ? val.toFixed(1)+'%' : val.toLocaleString();
+        return `<tr style="${i%2===0?'background:#fff':'background:#f8f9fc'}">
+          <td style="padding:5px 8px;border:1px solid #ddd;text-align:center;font-weight:600;color:${i<3?color:'#888'}">${i+1}</td>
+          <td style="padding:5px 8px;border:1px solid #ddd">${r.schoolName}</td>
+          ${showSector ? `<td style="padding:5px 8px;border:1px solid #ddd;font-size:11px;color:#666">${r.sectorName}</td>` : ''}
+          <td style="padding:5px 8px;border:1px solid #ddd;text-align:right;font-weight:600;color:${color}">${dispVal}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function doPrint() {
+  const sectors = getCheckedValues('print-sector-checks');
+  const topics = getCheckedValues('print-topic-checks');
+  const reportTitle = document.getElementById('print-report-title').value || 'รายงานข้อมูลโรงเรียนเรียนรวม';
+  const reportDate = document.getElementById('print-report-date').value || '';
+
+  if (!sectors.length || !topics.length) { alert('กรุณาเลือกสังกัดและหัวข้ออย่างน้อย 1 รายการ'); return; }
+
+  const STAT_GROUPS_PRINT = [
+    { key:'all',  label:'ภาพรวมทุกสังกัด',  keys:['spp1','spp2','spp3','spm','skr','sch'] },
+    { key:'spp1', label:'สพป.สงขลา เขต 1',  keys:['spp1'] },
+    { key:'spp2', label:'สพป.สงขลา เขต 2',  keys:['spp2'] },
+    { key:'spp3', label:'สพป.สงขลา เขต 3',  keys:['spp3'] },
+    { key:'spm',  label:'สพม.สงขลา',         keys:['spm'] },
+    { key:'skr',  label:'สกร.สงขลา',          keys:['skr'] },
+    { key:'sch',  label:'สช.สงขลา',           keys:['sch'] },
+  ];
+
+  const topicDefs = [
+    { key:'p1', title:'ร้อยละนักเรียนในระบบ SET ต่อนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% SET', color:'#1a4f8a' },
+    { key:'p2', title:'ร้อยละนักเรียนขอรับคูปองการศึกษาต่อนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.p2-a.p2, valFn:r=>r.p2, valLabel:'% คูปอน', color:'#b87714' },
+    { key:'p3', title:'ร้อยละนักเรียนขอรับคูปองการศึกษาต่อนักเรียนในระบบ SET (จากมากไปน้อย)', sortFn:(a,b)=>b.p3-a.p3, valFn:r=>r.p3, valLabel:'% คูปอน/SET', color:'#0d7c5f' },
+    { key:'total', title:'จำนวนนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.totalStudents-a.totalStudents, valFn:r=>r.totalStudents, valLabel:'จำนวน (คน)', color:'#5b41b0' },
+  ];
+
+  let html = `
+    <div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #1a4f8a">
+      <div style="font-size:20px;font-weight:700;color:#1a4f8a;margin-bottom:4px">${reportTitle}</div>
+      <div style="font-size:14px;color:#5a6175">${document.getElementById('header-subtitle').textContent}</div>
+      ${reportDate ? `<div style="font-size:13px;color:#888;margin-top:4px">ข้อมูล ณ ${reportDate}</div>` : ''}
+    </div>`;
+
+  const selectedGroups = STAT_GROUPS_PRINT.filter(g => sectors.includes(g.key));
+  let isFirstPage = true;
+
+  selectedGroups.forEach((grp, gi) => {
+    const rows = grp.keys.reduce((acc, k) => {
+      getSectorData(k).forEach(r => acc.push({
+        ...r, sectorKey:k, sectorName:SECTORS[k].name,
+        p1:calcPct(r.setStudents,r.totalStudents),
+        p2:calcPct(r.couponStudents,r.totalStudents),
+        p3:calcPct(r.couponStudents,r.setStudents)
+      }));
+      return acc;
+    }, []);
+
+    const t = grp.keys.reduce((a,k)=>{
+      const s=sectorTotals(k);
+      return {schools:a.schools+s.schools,total:a.total+s.total,set:a.set+s.set,coupon:a.coupon+s.coupon};
+    },{schools:0,total:0,set:0,coupon:0});
+
+    if (!isFirstPage) html += '<div class="print-page-break"></div>';
+    isFirstPage = false;
+
+    html += `<div class="print-section">
+      <div style="background:#1a4f8a;color:#fff;padding:8px 14px;border-radius:6px 6px 0 0;font-size:14px;font-weight:600;margin-bottom:0">
+        ${grp.label}
+      </div>
+      <div style="border:1px solid #ccc;border-top:none;border-radius:0 0 6px 6px;padding:12px;margin-bottom:16px">`;
+
+    if (topics.includes('summary')) {
+      html += `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+        <div style="background:#f0f4ff;border-radius:6px;padding:10px 12px;text-align:center">
+          <div style="font-size:11px;color:#5a6175;margin-bottom:4px">โรงเรียน</div>
+          <div style="font-size:18px;font-weight:700;color:#1a4f8a">${t.schools}</div><div style="font-size:11px;color:#888">แห่ง</div>
+        </div>
+        <div style="background:#f0f4ff;border-radius:6px;padding:10px 12px;text-align:center">
+          <div style="font-size:11px;color:#5a6175;margin-bottom:4px">นักเรียนทั้งหมด</div>
+          <div style="font-size:18px;font-weight:700;color:#1a4f8a">${t.total.toLocaleString()}</div><div style="font-size:11px;color:#888">คน</div>
+        </div>
+        <div style="background:#e8f5f0;border-radius:6px;padding:10px 12px;text-align:center">
+          <div style="font-size:11px;color:#0d7c5f;margin-bottom:4px">% SET รวม</div>
+          <div style="font-size:18px;font-weight:700;color:#0d7c5f">${calcPct(t.set,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.set.toLocaleString()} คน</div>
+        </div>
+        <div style="background:#fef8e8;border-radius:6px;padding:10px 12px;text-align:center">
+          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% คูปอน รวม</div>
+          <div style="font-size:18px;font-weight:700;color:#b87714">${calcPct(t.coupon,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.coupon.toLocaleString()} คน</div>
+        </div>
+      </div>`;
+    }
+
+    topicDefs.filter(tp => topics.includes(tp.key)).forEach(tp => {
+      html += `<div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:600;color:${tp.color};margin-bottom:6px;border-left:3px solid ${tp.color};padding-left:8px">${tp.title}</div>
+        ${buildPrintRankTable(rows, tp.sortFn, tp.valFn, tp.valLabel, tp.color, grp.label)}
+      </div>`;
+    });
+
+    html += '</div></div>';
+  });
+
+  // Write to print area and print
+  const printArea = document.getElementById('print-area');
+  printArea.innerHTML = html;
+  document.getElementById('print-modal').classList.remove('open');
+
+  setTimeout(() => {
+    window.print();
+  }, 300);
+}
 document.addEventListener('DOMContentLoaded', () => {
   if (apiUrl) document.getElementById('api-url-input').value = apiUrl;
   // config โหลดจาก Google Sheet ใน loadAllData() อัตโนมัติ
