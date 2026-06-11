@@ -165,6 +165,19 @@
   .config-input input:focus { border-color: var(--primary); }
   .url-saved { font-size: 13px; color: var(--accent); margin-top: 10px; display: flex; align-items: center; gap: 6px; }
 
+  .pin-overlay { position:fixed;inset:0;background:rgba(15,25,50,0.7);z-index:300;display:flex;align-items:center;justify-content:center; }
+  .pin-box { background:var(--surface);border-radius:var(--radius-lg);padding:32px 28px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.25); }
+  .pin-box h3 { font-size:18px;font-weight:600;margin-bottom:6px; }
+  .pin-box p { font-size:13px;color:var(--text-muted);margin-bottom:20px; }
+  .pin-dots { display:flex;justify-content:center;gap:10px;margin-bottom:20px; }
+  .pin-dot { width:14px;height:14px;border-radius:50%;border:2px solid var(--border-strong);transition:background 0.15s; }
+  .pin-dot.filled { background:var(--primary);border-color:var(--primary); }
+  .pin-pad { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px; }
+  .pin-btn { background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:18px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;color:var(--text);transition:background 0.1s; }
+  .pin-btn:hover { background:var(--primary-50); }
+  .pin-btn:active { background:var(--primary);color:#fff; }
+  .pin-error { color:var(--coral);font-size:13px;margin-top:8px;min-height:20px; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
   @media (max-width: 768px) {
     .main { padding: 16px; }
     .stat-grid { grid-template-columns: 1fr 1fr; }
@@ -265,8 +278,18 @@
 
   <!-- ===== CONFIG PAGE ===== -->
   <div class="page" id="page-config">
+    <div id="config-locked" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center">
+      <div style="width:64px;height:64px;background:var(--primary-50);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+        <i class="ti ti-lock" style="font-size:28px;color:var(--primary)"></i>
+      </div>
+      <div style="font-size:17px;font-weight:600;margin-bottom:6px">หน้าตั้งค่าสำหรับแอดมิน</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px">กรุณาใส่รหัส PIN เพื่อเข้าถึง</div>
+      <button class="btn btn-primary" onclick="showPinModal('config')"><i class="ti ti-key"></i>ใส่รหัส PIN</button>
+    </div>
+    <div id="config-content" style="display:none">
     <div class="section-header" style="margin-bottom:24px">
       <h2><i class="ti ti-settings" style="color:var(--primary)"></i>ตั้งค่าระบบ</h2>
+      <button class="btn btn-outline btn-sm" onclick="lockConfig()"><i class="ti ti-lock"></i>ล็อคหน้านี้</button>
     </div>
     <div class="config-card">
       <h3><i class="ti ti-brand-google-drive" style="margin-right:6px;color:var(--primary)"></i>เชื่อมต่อ Google Sheet</h3>
@@ -277,6 +300,10 @@
         <button class="btn btn-primary" onclick="saveApiUrl()"><i class="ti ti-check"></i>บันทึก</button>
       </div>
       <div class="url-saved" id="url-saved-msg" style="display:none"><i class="ti ti-check-circle"></i>บันทึก URL แล้ว — คลิก "ภาพรวม" เพื่อโหลดข้อมูล</div>
+      <div id="embed-hint" style="display:none;margin-top:12px;padding:12px 14px;background:#e8f0fb;border-radius:var(--radius);border:1px solid #b5d4f4;font-size:13px;color:#0c447c">
+        <strong><i class="ti ti-bulb" style="margin-right:4px"></i>เพื่อให้ทุกเครื่องเชื่อมได้อัตโนมัติ</strong><br>
+        เปิดไฟล์ HTML ด้วย text editor → หาบรรทัด <code style="background:rgba(0,0,0,0.08);padding:1px 5px;border-radius:3px">const EMBEDDED_API_URL = ''</code> → วาง URL ของท่านระหว่างเครื่องหมาย '' แล้วบันทึกไฟล์ใหม่ จากนั้น deploy ขึ้น GitHub Pages อีกครั้ง
+      </div>
 
       <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
         <h3 style="margin-bottom:6px"><i class="ti ti-building" style="margin-right:6px;color:var(--primary)"></i>ชื่อหน่วยงาน</h3>
@@ -335,10 +362,60 @@
         <p>นำโค้ดนี้ไปวางใน Code.gs ของ Google Apps Script</p>
         <button class="btn btn-outline" onclick="downloadScript()"><i class="ti ti-file-code"></i>ดาวน์โหลด Code.gs</button>
       </div>
+
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
+        <h3 style="margin-bottom:6px"><i class="ti ti-key" style="margin-right:6px;color:var(--primary)"></i>เปลี่ยนรหัส PIN แอดมิน</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">รหัส PIN ปัจจุบันจะถูกเก็บใน Google Sheet (sheet: config) รหัสเริ่มต้นคือ <strong>1234</strong></p>
+        <div style="display:flex;gap:10px;align-items:flex-end">
+          <div class="form-group" style="margin:0;flex:1">
+            <label>รหัส PIN ใหม่ (ตัวเลข 4-8 หลัก)</label>
+            <input type="password" id="new-pin-input" placeholder="ใส่ PIN ใหม่" maxlength="8" style="width:100%">
+          </div>
+          <div class="form-group" style="margin:0;flex:1">
+            <label>ยืนยัน PIN ใหม่</label>
+            <input type="password" id="new-pin-confirm" placeholder="ยืนยัน PIN" maxlength="8" style="width:100%">
+          </div>
+          <button class="btn btn-primary" onclick="changePin()"><i class="ti ti-key"></i>เปลี่ยน PIN</button>
+        </div>
+      </div>
+    </div>
     </div>
   </div>
 
 </main>
+
+<!-- PIN MODAL -->
+<div class="pin-overlay" id="pin-overlay" style="display:none">
+  <div class="pin-box">
+    <div style="width:48px;height:48px;background:var(--primary-50);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+      <i class="ti ti-lock" style="font-size:22px;color:var(--primary)"></i>
+    </div>
+    <h3>ใส่รหัส PIN</h3>
+    <p>กรุณาใส่รหัส PIN เพื่อเข้าถึงหน้าตั้งค่า</p>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinClear()" style="font-size:14px">ล้าง</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn" onclick="pinBack()" style="font-size:14px"><i class="ti ti-backspace"></i></button>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="closePinModal()">ยกเลิก</button>
+  </div>
+</div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modal">
@@ -382,7 +459,10 @@ let currentSector = null;
 let editingId = null;
 let currentSppZone = 'spp1';
 let searchTerms = {};
-let apiUrl = localStorage.getItem('gs_api_url') || '';
+// ===== ฝัง URL ของ Apps Script ที่นี่เพื่อให้ทุกเครื่องใช้งานได้ทันที =====
+const EMBEDDED_API_URL = ''; // <-- วาง URL ของ Apps Script ของท่านตรงนี้
+// =========================================================================
+let apiUrl = EMBEDDED_API_URL || localStorage.getItem('gs_api_url') || '';
 
 if (apiUrl) {
   document.addEventListener('DOMContentLoaded', () => {
@@ -402,6 +482,10 @@ function showPage(name) {
   if (name === 'sch') renderSectorTable('sch');
   if (name === 'stats') renderStats();
   if (name === 'overview') renderOverview();
+  if (name === 'config' && !adminUnlocked) {
+    document.getElementById('config-locked').style.display = 'flex';
+    document.getElementById('config-content').style.display = 'none';
+  }
 }
 
 function setSppZone(zone) {
@@ -431,6 +515,15 @@ function loadAllData() {
     window[cbName] = function(json) {
       delete window[cbName];
       script.remove();
+      // โหลด config จาก sheet ถ้ามี
+      if (json._config) {
+        const cfg = json._config;
+        if (cfg.title) document.getElementById('header-title').textContent = cfg.title;
+        if (cfg.subtitle) document.getElementById('header-subtitle').textContent = cfg.subtitle;
+        if (cfg.logo) applyLogo(cfg.logo);
+        if (cfg.adminPin) cachedPin = cfg.adminPin;
+        delete json._config;
+      }
       allData = json;
       renderOverview();
       setSyncStatus('อัปเดตแล้ว');
@@ -887,24 +980,131 @@ async function deleteRow(sector, id) {
   } catch(e) { alert('เกิดข้อผิดพลาด: ' + e.message); }
 }
 
-function saveOrgName() {
+// ===== PIN SYSTEM =====
+let pinBuffer = '';
+let pinTarget = '';
+let adminUnlocked = false;
+let cachedPin = '1234'; // default, overridden from sheet
+
+function showPinModal(target) {
+  pinTarget = target;
+  pinBuffer = '';
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-overlay').style.display = 'flex';
+}
+
+function closePinModal() {
+  document.getElementById('pin-overlay').style.display = 'none';
+  pinBuffer = '';
+}
+
+function pinPress(digit) {
+  const maxLen = cachedPin.length || 4;
+  if (pinBuffer.length >= maxLen) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === maxLen) setTimeout(checkPin, 150);
+}
+
+function pinBack() { pinBuffer = pinBuffer.slice(0,-1); updatePinDots(); }
+function pinClear() { pinBuffer = ''; updatePinDots(); }
+
+function updatePinDots() {
+  const maxLen = cachedPin.length || 4;
+  const container = document.getElementById('pin-dots');
+  container.innerHTML = '';
+  for (let i = 0; i < maxLen; i++) {
+    const d = document.createElement('div');
+    d.className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
+    container.appendChild(d);
+  }
+}
+
+function checkPin() {
+  if (pinBuffer === cachedPin) {
+    document.getElementById('pin-overlay').style.display = 'none';
+    adminUnlocked = true;
+    if (pinTarget === 'config') {
+      document.getElementById('config-locked').style.display = 'none';
+      document.getElementById('config-content').style.display = 'block';
+    }
+    pinBuffer = '';
+  } else {
+    document.getElementById('pin-error').textContent = 'รหัส PIN ไม่ถูกต้อง';
+    pinBuffer = '';
+    updatePinDots();
+    // shake animation
+    const box = document.querySelector('.pin-box');
+    box.style.animation = 'none';
+    box.offsetHeight;
+    box.style.animation = 'shake 0.3s ease';
+  }
+}
+
+function lockConfig() {
+  adminUnlocked = false;
+  document.getElementById('config-locked').style.display = 'flex';
+  document.getElementById('config-content').style.display = 'none';
+}
+
+async function changePin() {
+  const np = document.getElementById('new-pin-input').value.trim();
+  const nc = document.getElementById('new-pin-confirm').value.trim();
+  if (!np || np.length < 4) { alert('PIN ต้องมีอย่างน้อย 4 หลัก'); return; }
+  if (!/^\d+$/.test(np)) { alert('PIN ต้องเป็นตัวเลขเท่านั้น'); return; }
+  if (np !== nc) { alert('PIN ทั้งสองไม่ตรงกัน'); return; }
+  if (!apiUrl) { alert('กรุณาตั้งค่า URL ก่อน'); return; }
+  const url = apiUrl + '?action=saveConfig&data=' + encodeURIComponent(JSON.stringify({ adminPin: np }));
+  await jsonpRequest(url);
+  cachedPin = np;
+  document.getElementById('new-pin-input').value = '';
+  document.getElementById('new-pin-confirm').value = '';
+  alert('เปลี่ยนรหัส PIN เรียบร้อยแล้ว');
+}
+
+async function saveOrgName() {
   const title = document.getElementById('cfg-title').value.trim();
   const subtitle = document.getElementById('cfg-subtitle').value.trim();
-  if (title) { localStorage.setItem('org_title', title); document.getElementById('header-title').textContent = title; }
-  if (subtitle) { localStorage.setItem('org_subtitle', subtitle); document.getElementById('header-subtitle').textContent = subtitle; }
-  alert('บันทึกชื่อหน่วยงานแล้ว');
+  if (!apiUrl) { alert('กรุณาตั้งค่า URL ก่อน'); return; }
+  if (title) document.getElementById('header-title').textContent = title;
+  if (subtitle) document.getElementById('header-subtitle').textContent = subtitle;
+  // บันทึกขึ้น Sheet
+  const url = apiUrl + '?action=saveConfig&data=' + encodeURIComponent(JSON.stringify({ title, subtitle }));
+  await jsonpRequest(url);
+  alert('บันทึกชื่อหน่วยงานใน Google Sheet แล้ว — ทุกเครื่องจะเห็นเหมือนกัน');
 }
 
 function handleLogoUpload(input) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     const dataUrl = e.target.result;
-    localStorage.setItem('org_logo', dataUrl);
     applyLogo(dataUrl);
+    if (!apiUrl) { alert('กรุณาตั้งค่า URL ก่อนเพื่อบันทึกโลโก้'); return; }
+    // บันทึกขึ้น Sheet (โลโก้อาจใหญ่ แนะนำ resize ก่อน)
+    const resized = await resizeImage(dataUrl, 120);
+    const url = apiUrl + '?action=saveConfig&data=' + encodeURIComponent(JSON.stringify({ logo: resized }));
+    await jsonpRequest(url);
+    alert('บันทึกโลโก้ใน Google Sheet แล้ว — ทุกเครื่องจะเห็นเหมือนกัน');
   };
   reader.readAsDataURL(file);
+}
+
+function resizeImage(dataUrl, maxSize) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ratio = Math.min(maxSize/img.width, maxSize/img.height, 1);
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/png', 0.85));
+    };
+    img.src = dataUrl;
+  });
 }
 
 function applyLogo(dataUrl) {
@@ -930,6 +1130,8 @@ function saveApiUrl() {
   apiUrl = url;
   localStorage.setItem('gs_api_url', url);
   document.getElementById('url-saved-msg').style.display = 'flex';
+  // แสดงคำแนะนำให้ฝัง URL ในไฟล์
+  document.getElementById('embed-hint').style.display = 'block';
   loadAllData();
 }
 
@@ -973,12 +1175,7 @@ document.getElementById('modal').addEventListener('click', function(e) {
 });
 document.addEventListener('DOMContentLoaded', () => {
   if (apiUrl) document.getElementById('api-url-input').value = apiUrl;
-  const savedTitle = localStorage.getItem('org_title');
-  const savedSubtitle = localStorage.getItem('org_subtitle');
-  const savedLogo = localStorage.getItem('org_logo');
-  if (savedTitle) { document.getElementById('header-title').textContent = savedTitle; document.getElementById('cfg-title').value = savedTitle; }
-  if (savedSubtitle) { document.getElementById('header-subtitle').textContent = savedSubtitle; document.getElementById('cfg-subtitle').value = savedSubtitle; }
-  if (savedLogo) applyLogo(savedLogo);
+  // config โหลดจาก Google Sheet ใน loadAllData() อัตโนมัติ
   if (!apiUrl) {
     document.getElementById('sector-overview-cards').innerHTML = `
       <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted)">
