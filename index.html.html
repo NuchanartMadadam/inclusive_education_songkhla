@@ -207,7 +207,8 @@
   <button class="nav-tab" onclick="showPage('skr')"><i class="ti ti-users" style="margin-right:5px"></i>สกร.</button>
   <button class="nav-tab" onclick="showPage('sch')"><i class="ti ti-certificate" style="margin-right:5px"></i>สช.</button>
   <button class="nav-tab" onclick="showPage('stats')"><i class="ti ti-chart-bar" style="margin-right:5px"></i>สถิติ</button>
-  <button class="nav-tab" onclick="showPage('config')" style="margin-left:auto"><i class="ti ti-settings" style="margin-right:5px"></i>ตั้งค่า</button>
+  <button class="nav-tab" id="admin-nav-btn" onclick="toggleAdminNav()" style="margin-left:auto"><i class="ti ti-lock" style="margin-right:5px" id="admin-nav-icon"></i><span id="admin-nav-label">แอดมิน</span></button>
+  <button class="nav-tab" onclick="showPage('config')"><i class="ti ti-settings" style="margin-right:5px"></i>ตั้งค่า</button>
 </nav>
 
 <main class="main">
@@ -245,7 +246,7 @@
   <div class="page" id="page-spm">
     <div class="section-header">
       <h2><i class="ti ti-building" style="color:var(--primary)"></i>สพม.สงขลา</h2>
-      <button class="btn btn-primary" onclick="openAddModal('spm')"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
+      <button class="btn btn-primary" id="add-btn-spm" onclick="openAddModal('spm')" style="display:none"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
     </div>
     <div id="spm-table-wrap"></div>
   </div>
@@ -254,7 +255,7 @@
   <div class="page" id="page-skr">
     <div class="section-header">
       <h2><i class="ti ti-users" style="color:var(--primary)"></i>สกร.สงขลา</h2>
-      <button class="btn btn-primary" onclick="openAddModal('skr')"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
+      <button class="btn btn-primary" id="add-btn-skr" onclick="openAddModal('skr')" style="display:none"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
     </div>
     <div id="skr-table-wrap"></div>
   </div>
@@ -263,7 +264,7 @@
   <div class="page" id="page-sch">
     <div class="section-header">
       <h2><i class="ti ti-certificate" style="color:var(--primary)"></i>สช.สงขลา</h2>
-      <button class="btn btn-primary" onclick="openAddModal('sch')"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
+      <button class="btn btn-primary" id="add-btn-sch" onclick="openAddModal('sch')" style="display:none"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
     </div>
     <div id="sch-table-wrap"></div>
   </div>
@@ -714,7 +715,7 @@ function renderSectorTable(sectorKey) {
       <div style="display:flex;gap:8px;align-items:center">
         <span style="font-size:13px;color:var(--text-muted)">${filtered.length} โรงเรียน</span>
         <button class="btn btn-outline btn-sm" onclick="loadAllData()"><i class="ti ti-refresh"></i>รีเฟรช</button>
-        <button class="btn btn-primary btn-sm" onclick="openAddModal('${sectorKey}')"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>
+        ${adminUnlocked ? `<button class="btn btn-primary btn-sm" onclick="openAddModal('${sectorKey}')"><i class="ti ti-plus"></i>เพิ่มโรงเรียน</button>` : `<button class="btn btn-outline btn-sm" onclick="requireAdmin(()=>{})" style="opacity:0.6"><i class="ti ti-lock" style="margin-right:4px"></i>โหมดแอดมิน</button>`}
       </div>
     </div>
     ${filtered.length === 0 ? `<div class="no-data"><i class="ti ti-school"></i>ยังไม่มีข้อมูลโรงเรียน<br><small style="margin-top:6px;display:block">คลิก "เพิ่มโรงเรียน" เพื่อเริ่มต้น</small></div>` : `
@@ -749,8 +750,10 @@ function renderSectorTable(sectorKey) {
             <td>${pctBadge(p3)}</td>
             <td>
               <div class="action-btns">
-                <button class="btn btn-outline btn-sm" onclick="openEditModal('${sectorKey}','${r.id}')"><i class="ti ti-edit"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="deleteRow('${sectorKey}','${r.id}')"><i class="ti ti-trash"></i></button>
+                ${adminUnlocked
+                  ? `<button class="btn btn-outline btn-sm" onclick="openEditModal('${sectorKey}','${r.id}')"><i class="ti ti-edit"></i></button>
+                     <button class="btn btn-danger btn-sm" onclick="deleteRow('${sectorKey}','${r.id}')"><i class="ti ti-trash"></i></button>`
+                  : `<button class="btn btn-outline btn-sm" onclick="requireAdmin(()=>{})" title="ต้องเข้าสู่ระบบก่อน" style="opacity:0.5"><i class="ti ti-lock"></i></button>`}
               </div>
             </td>
           </tr>`;
@@ -904,7 +907,39 @@ function renderStats() {
 // MODAL
 let modalSector = null;
 
+function toggleAdminNav() {
+  if (adminUnlocked) {
+    // logout
+    adminUnlocked = false;
+    document.getElementById('admin-nav-icon').className = 'ti ti-lock';
+    document.getElementById('admin-nav-label').textContent = 'แอดมิน';
+    // hide add buttons in headers
+    ['spm','skr','sch'].forEach(s => {
+      const b = document.getElementById('add-btn-' + s);
+      if (b) b.style.display = 'none';
+    });
+    // re-render current table to hide edit/delete
+    const activePage = document.querySelector('.page.active');
+    if (activePage) {
+      const id = activePage.id.replace('page-','');
+      if (['spp','spm','skr','sch'].includes(id)) renderSectorTable(id === 'spp' ? currentSppZone : id);
+    }
+    lockConfig();
+  } else {
+    showPinModal('adminNav');
+  }
+}
+
+function requireAdmin(callback) {
+  if (adminUnlocked) { callback(); return; }
+  showPinModal('action');
+  window._pendingAdminCallback = callback;
+}
+
 function openAddModal(sector) {
+  requireAdmin(() => _openAddModal(sector));
+}
+function _openAddModal(sector) {
   modalSector = sector; editingId = null;
   document.getElementById('modal-title').textContent = `เพิ่มโรงเรียน — ${SECTORS[sector]?.name || sector}`;
   document.getElementById('f-name').value = '';
@@ -916,6 +951,9 @@ function openAddModal(sector) {
 }
 
 function openEditModal(sector, id) {
+  requireAdmin(() => _openEditModal(sector, id));
+}
+function _openEditModal(sector, id) {
   const row = getSectorData(sector).find(r => String(r.id) === String(id));
   if (!row) return;
   modalSector = sector; editingId = id;
@@ -972,6 +1010,12 @@ async function saveModal() {
 }
 
 async function deleteRow(sector, id) {
+  requireAdmin(async () => {
+    if (!confirm('ยืนยันการลบโรงเรียนนี้?')) return;
+    await _doDeleteRow(sector, id);
+  });
+}
+async function _doDeleteRow(sector, id) {
   if (!confirm('ยืนยันการลบโรงเรียนนี้?')) return;
   try {
     await jsonpRequest(apiUrl + '?action=delete&sector=' + sector + '&rowId=' + encodeURIComponent(id));
@@ -1028,6 +1072,24 @@ function checkPin() {
     if (pinTarget === 'config') {
       document.getElementById('config-locked').style.display = 'none';
       document.getElementById('config-content').style.display = 'block';
+    }
+    if (pinTarget === 'adminNav') {
+      document.getElementById('admin-nav-icon').className = 'ti ti-lock-open';
+      document.getElementById('admin-nav-label').textContent = 'ออกจากระบบ';
+      ['spm','skr','sch'].forEach(s => {
+        const b = document.getElementById('add-btn-' + s);
+        if (b) b.style.display = '';
+      });
+      const activePage = document.querySelector('.page.active');
+      if (activePage) {
+        const id = activePage.id.replace('page-','');
+        if (['spp','spm','skr','sch'].includes(id)) renderSectorTable(id === 'spp' ? currentSppZone : id);
+      }
+    }
+    if (window._pendingAdminCallback) {
+      const cb = window._pendingAdminCallback;
+      window._pendingAdminCallback = null;
+      cb();
     }
     pinBuffer = '';
   } else {
