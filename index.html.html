@@ -197,6 +197,8 @@
   .print-check { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 13px; background: var(--surface); color: var(--text-muted); transition: all 0.15s; user-select: none; }
   .print-check.selected { background: var(--primary-50); color: var(--primary); border-color: var(--primary); font-weight: 500; }
   .print-check input { display: none; }
+  .print-check .ti-check { display: none; }
+  .print-check.selected .ti-check { display: inline; }
   @media (max-width: 768px) {
     .main { padding: 16px; }
     .stat-grid { grid-template-columns: 1fr 1fr; }
@@ -413,24 +415,24 @@
     <div style="margin-bottom:16px">
       <div style="font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px">เลือกสังกัดที่ต้องการ</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px" id="print-sector-checks">
-        <label class="print-check selected"><input type="checkbox" value="all" checked>ภาพรวมทุกสังกัด</label>
-        <label class="print-check selected"><input type="checkbox" value="spp1" checked>สพป.เขต 1</label>
-        <label class="print-check selected"><input type="checkbox" value="spp2" checked>สพป.เขต 2</label>
-        <label class="print-check selected"><input type="checkbox" value="spp3" checked>สพป.เขต 3</label>
-        <label class="print-check selected"><input type="checkbox" value="spm" checked>สพม.</label>
-        <label class="print-check selected"><input type="checkbox" value="skr" checked>สกร.</label>
-        <label class="print-check selected"><input type="checkbox" value="sch" checked>สช.</label>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="all"><i class="ti ti-check" style="font-size:13px"></i>ภาพรวมทุกสังกัด</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="spp1"><i class="ti ti-check" style="font-size:13px"></i>สพป.เขต 1</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="spp2"><i class="ti ti-check" style="font-size:13px"></i>สพป.เขต 2</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="spp3"><i class="ti ti-check" style="font-size:13px"></i>สพป.เขต 3</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="spm"><i class="ti ti-check" style="font-size:13px"></i>สพม.</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="skr"><i class="ti ti-check" style="font-size:13px"></i>สกร.</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="sch"><i class="ti ti-check" style="font-size:13px"></i>สช.</div>
       </div>
     </div>
 
     <div style="margin-bottom:16px">
       <div style="font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px">เลือกหัวข้อสถิติ</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px" id="print-topic-checks">
-        <label class="print-check selected"><input type="checkbox" value="summary" checked>สรุปภาพรวม</label>
-        <label class="print-check selected"><input type="checkbox" value="p1" checked>อันดับ % SET/นักเรียนทั้งหมด</label>
-        <label class="print-check selected"><input type="checkbox" value="p2" checked>อันดับ % คูปอน/นักเรียนทั้งหมด</label>
-        <label class="print-check selected"><input type="checkbox" value="p3" checked>อันดับ % คูปอน/SET</label>
-        <label class="print-check selected"><input type="checkbox" value="total" checked>อันดับจำนวนนักเรียน</label>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="summary"><i class="ti ti-check" style="font-size:13px"></i>สรุปภาพรวม</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="p1"><i class="ti ti-check" style="font-size:13px"></i>อันดับ % SET/นักเรียนทั้งหมด</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="p2"><i class="ti ti-check" style="font-size:13px"></i>อันดับ % คูปองการศึกษา/นักเรียนทั้งหมด</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="p3"><i class="ti ti-check" style="font-size:13px"></i>อันดับ % คูปองการศึกษา/SET</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="total"><i class="ti ti-check" style="font-size:13px"></i>อันดับจำนวนนักเรียน</div>
       </div>
     </div>
 
@@ -722,7 +724,7 @@ function renderOverview() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:6px">
           <i class="ti ti-building-school"></i>สพป.สงขลา
-          <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px">${sppAll.schools} โรงเรียน รวม ${sppAll.total.toLocaleString()} คน · SET ${calcPct(sppAll.set,sppAll.total).toFixed(1)}% · คูปอน ${calcPct(sppAll.coupon,sppAll.total).toFixed(1)}%</span>
+          <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px">${sppAll.schools} โรงเรียน รวม ${sppAll.total.toLocaleString()} คน · SET ${calcPct(sppAll.set,sppAll.total).toFixed(1)}% · คูปองการศึกษา ${calcPct(sppAll.coupon,sppAll.total).toFixed(1)}%</span>
         </div>
         <button class="btn btn-outline btn-sm" onclick="navToSector('spp')">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button>
       </div>
@@ -796,8 +798,8 @@ function renderSectorTable(sectorKey) {
           <th>ระบบ SET</th>
           <th>% SET/ทั้งหมด</th>
           <th>คูปองการศึกษา</th>
-          <th>% คูปอน/ทั้งหมด</th>
-          <th>% คูปอน/SET</th>
+          <th>% คูปองการศึกษา/ทั้งหมด</th>
+          <th>% คูปองการศึกษา/SET</th>
           <th>จัดการ</th>
         </tr>
       </thead>
@@ -918,8 +920,8 @@ function renderStats() {
 
     const sections = [
       { id:'rs1', title:'% นักเรียนในระบบ SET ต่อนักเรียนทั้งหมด', icon:'ti-clipboard-check', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% SET', color:'#1a4f8a' },
-      { id:'rs2', title:'% นักเรียนขอรับคูปองต่อนักเรียนทั้งหมด', icon:'ti-ticket', sortFn:(a,b)=>b.p2-a.p2, valFn:r=>r.p2, valLabel:'% คูปอน', color:'#b87714' },
-      { id:'rs3', title:'% นักเรียนขอรับคูปองต่อนักเรียนในระบบ SET', icon:'ti-chart-pie', sortFn:(a,b)=>b.p3-a.p3, valFn:r=>r.p3, valLabel:'% คูปอน/SET', color:'#0d7c5f' },
+      { id:'rs2', title:'% นักเรียนขอรับคูปองต่อนักเรียนทั้งหมด', icon:'ti-ticket', sortFn:(a,b)=>b.p2-a.p2, valFn:r=>r.p2, valLabel:'% คูปองการศึกษา', color:'#b87714' },
+      { id:'rs3', title:'% นักเรียนขอรับคูปองต่อนักเรียนในระบบ SET', icon:'ti-chart-pie', sortFn:(a,b)=>b.p3-a.p3, valFn:r=>r.p3, valLabel:'% คูปองการศึกษา/SET', color:'#0d7c5f' },
       { id:'rs4', title:'จำนวนนักเรียนทั้งหมด', icon:'ti-users', sortFn:(a,b)=>b.totalStudents-a.totalStudents, valFn:r=>r.totalStudents, valLabel:'จำนวน', color:'#5b41b0' },
     ];
 
@@ -938,7 +940,7 @@ function renderStats() {
           <div style="font-size:20px;font-weight:600;color:#1a4f8a">${calcPct(t.set,t.total).toFixed(1)}%</div>
         </div>
         <div style="background:var(--amber-light);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
-          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% คูปอน รวม</div>
+          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% คูปองการศึกษา รวม</div>
           <div style="font-size:20px;font-weight:600;color:#b87714">${calcPct(t.coupon,t.total).toFixed(1)}%</div>
         </div>
       </div>
@@ -1302,14 +1304,16 @@ function jsonResponse(d){return ContentService.createTextOutput(JSON.stringify(d
 document.getElementById('modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
+document.getElementById('print-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
 
 // ===== PRINT SYSTEM =====
-document.querySelectorAll('.print-check').forEach(label => {
-  label.addEventListener('click', () => {
-    label.classList.toggle('selected');
-    label.querySelector('input').checked = label.classList.contains('selected');
-  });
-});
+// print-check toggle handled inline via togglePrintCheck()
+
+function togglePrintCheck(el) {
+  el.classList.toggle('selected');
+}
 
 function openPrintModal() {
   document.getElementById('print-modal').classList.add('open');
@@ -1326,7 +1330,7 @@ function openPrintModal() {
 }
 
 function getCheckedValues(containerId) {
-  return [...document.querySelectorAll('#' + containerId + ' input:checked')].map(i => i.value);
+  return [...document.querySelectorAll('#' + containerId + ' .print-check.selected')].map(d => d.dataset.value);
 }
 
 function buildPrintRankTable(rows, sortFn, valFn, valLabel, color, sectorLabel) {
@@ -1379,8 +1383,8 @@ function doPrint() {
 
   const topicDefs = [
     { key:'p1', title:'ร้อยละนักเรียนในระบบ SET ต่อนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% SET', color:'#1a4f8a' },
-    { key:'p2', title:'ร้อยละนักเรียนขอรับคูปองการศึกษาต่อนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.p2-a.p2, valFn:r=>r.p2, valLabel:'% คูปอน', color:'#b87714' },
-    { key:'p3', title:'ร้อยละนักเรียนขอรับคูปองการศึกษาต่อนักเรียนในระบบ SET (จากมากไปน้อย)', sortFn:(a,b)=>b.p3-a.p3, valFn:r=>r.p3, valLabel:'% คูปอน/SET', color:'#0d7c5f' },
+    { key:'p2', title:'ร้อยละนักเรียนขอรับคูปองการศึกษาต่อนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.p2-a.p2, valFn:r=>r.p2, valLabel:'% คูปองการศึกษา', color:'#b87714' },
+    { key:'p3', title:'ร้อยละนักเรียนขอรับคูปองการศึกษาต่อนักเรียนในระบบ SET (จากมากไปน้อย)', sortFn:(a,b)=>b.p3-a.p3, valFn:r=>r.p3, valLabel:'% คูปองการศึกษา/SET', color:'#0d7c5f' },
     { key:'total', title:'จำนวนนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.totalStudents-a.totalStudents, valFn:r=>r.totalStudents, valLabel:'จำนวน (คน)', color:'#5b41b0' },
   ];
 
@@ -1434,7 +1438,7 @@ function doPrint() {
           <div style="font-size:18px;font-weight:700;color:#0d7c5f">${calcPct(t.set,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.set.toLocaleString()} คน</div>
         </div>
         <div style="background:#fef8e8;border-radius:6px;padding:10px 12px;text-align:center">
-          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% คูปอน รวม</div>
+          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% คูปองการศึกษา รวม</div>
           <div style="font-size:18px;font-weight:700;color:#b87714">${calcPct(t.coupon,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.coupon.toLocaleString()} คน</div>
         </div>
       </div>`;
