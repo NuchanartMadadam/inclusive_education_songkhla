@@ -500,7 +500,7 @@
       <input type="number" id="f-total" placeholder="0" min="0">
     </div>
     <div class="form-group">
-      <label>จำนวนนักเรียนในระบบ SET</label>
+      <label>${['skr','sch'].includes(modalSector) ? 'จำนวนนักเรียนพิการทั้งหมด' : 'จำนวนนักเรียนในระบบ SET'}</label>
       <input type="number" id="f-set" placeholder="0" min="0">
     </div>
     <div class="form-group">
@@ -530,7 +530,7 @@ let editingId = null;
 let currentSppZone = 'spp1';
 let searchTerms = {};
 // ===== ฝัง URL ของ Apps Script ที่นี่เพื่อให้ทุกเครื่องใช้งานได้ทันที =====
-const EMBEDDED_API_URL = 'https://script.google.com/macros/s/AKfycbz0zvGMnjJuG8WMdYTOnwy418TEQyn49BfjLsc7Z8Bj__6LQlPYxKBF8749CXtXxflZ0Q/exec'; // <-- วาง URL ของ Apps Script ของท่านตรงนี้
+const EMBEDDED_API_URL = ''; // <-- วาง URL ของ Apps Script ของท่านตรงนี้
 // =========================================================================
 let apiUrl = EMBEDDED_API_URL || localStorage.getItem('gs_api_url') || '';
 
@@ -686,7 +686,7 @@ function renderOverview() {
       </div>
       <div class="sec-stats">
         <div class="sec-stat">
-          <div class="s-label">ระบบ SET</div>
+          <div class="s-label">${["skr","sch"].includes(keys[0]) ? "นักเรียนพิการทั้งหมด" : "ระบบ SET"}</div>
           <div class="s-val">${t.set.toLocaleString()} คน</div>
           <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pctSet,100)}%;background:#1a4f8a"></div></div>
           <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctSet.toFixed(1)}% ของนักเรียนทั้งหมด</div>
@@ -795,11 +795,11 @@ function renderSectorTable(sectorKey) {
           <th>#</th>
           <th>ชื่อโรงเรียน</th>
           <th>นักเรียนทั้งหมด</th>
-          <th>ระบบ SET</th>
-          <th>% SET/ทั้งหมด</th>
+          <th>${['skr','sch'].includes(sectorKey) ? 'นักเรียนพิการทั้งหมด' : 'ระบบ SET'}</th>
+          <th>${['skr','sch'].includes(sectorKey) ? '% นักเรียนพิการ/ทั้งหมด' : '% SET/ทั้งหมด'}</th>
           <th>คูปองการศึกษา</th>
           <th>% คูปองการศึกษา/ทั้งหมด</th>
-          <th>% คูปองการศึกษา/SET</th>
+          <th>${['skr','sch'].includes(sectorKey) ? '% คูปองการศึกษา/นักเรียนพิการ' : '% คูปองการศึกษา/SET'}</th>
           <th>จัดการ</th>
         </tr>
       </thead>
