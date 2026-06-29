@@ -684,7 +684,7 @@ function renderOverview() {
       </div>
       <div class="sec-stats">
         <div class="sec-stat">
-          <div class="s-label">${["skr","sch"].includes(keys[0]) ? "นักเรียนพิการทั้งหมด" : "ระบบ SET"}</div>
+          <div class="s-label">นักเรียนพิการ</div>
           <div class="s-val">${t.set.toLocaleString()} คน</div>
           <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pctSet,100)}%;background:#1a4f8a"></div></div>
           <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctSet.toFixed(2)}% ของนักเรียนทั้งหมด</div>
