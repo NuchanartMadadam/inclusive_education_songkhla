@@ -240,8 +240,8 @@
     <div class="stat-grid" id="overview-stats">
       <div class="stat-card accent-blue"><div class="label"><i class="ti ti-school" style="font-size:13px;margin-right:4px"></i>โรงเรียนทั้งหมด</div><div class="value" id="ov-schools">—</div><div class="unit">แห่ง</div></div>
       <div class="stat-card accent-blue"><div class="label"><i class="ti ti-users" style="font-size:13px;margin-right:4px"></i>นักเรียนทั้งหมด</div><div class="value" id="ov-students">—</div><div class="unit">คน</div></div>
-      <div class="stat-card accent-green"><div class="label"><i class="ti ti-clipboard-check" style="font-size:13px;margin-right:4px"></i>นักเรียนในระบบ SET</div><div class="value" id="ov-set">—</div><div class="unit">คน</div></div>
-      <div class="stat-card accent-green"><div class="label">% SET ต่อนักเรียนทั้งหมด</div><div class="value" id="ov-pct-set">—</div><div class="unit">%</div></div>
+      <div class="stat-card accent-green"><div class="label"><i class="ti ti-clipboard-check" style="font-size:13px;margin-right:4px"></i>นักเรียนพิการ</div><div class="value" id="ov-set">—</div><div class="unit">คน</div></div>
+      <div class="stat-card accent-green"><div class="label">% นักเรียนพิการต่อนักเรียนทั้งหมด</div><div class="value" id="ov-pct-set">—</div><div class="unit">%</div></div>
       <div class="stat-card accent-amber"><div class="label"><i class="ti ti-file-text" style="font-size:13px;margin-right:4px"></i>นักเรียนในระบบ IEP Online</div><div class="value" id="ov-iep">—</div><div class="unit">คน</div></div>
     </div>
 
@@ -429,7 +429,7 @@
       <div style="font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px">เลือกหัวข้อสถิติ</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px" id="print-topic-checks">
         <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="summary"><i class="ti ti-check" style="font-size:13px"></i>สรุปภาพรวม</div>
-        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="p1"><i class="ti ti-check" style="font-size:13px"></i>อันดับ % SET/นักเรียนทั้งหมด</div>
+        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="p1"><i class="ti ti-check" style="font-size:13px"></i>อันดับ % นักเรียนพิการ/นักเรียนทั้งหมด</div>
         <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="total"><i class="ti ti-check" style="font-size:13px"></i>อันดับจำนวนนักเรียน</div>
       </div>
     </div>
@@ -937,7 +937,7 @@ function renderStats() {
     }, {schools:0,total:0,set:0,iep:0});
 
     const sections = [
-      { id:'rs1', title:'อันดับ % นักเรียนในระบบ SET ต่อนักเรียนทั้งหมด (จากมากไปน้อย)', icon:'ti-clipboard-check', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% SET', color:'#1a4f8a' },
+      { id:'rs1', title:'อันดับ % นักเรียนพิการต่อนักเรียนทั้งหมด (จากมากไปน้อย)', icon:'ti-clipboard-check', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% นักเรียนพิการ', color:'#1a4f8a' },
     ];
 
     document.getElementById('stats-body').innerHTML = `
@@ -951,7 +951,7 @@ function renderStats() {
           <div style="font-size:20px;font-weight:600">${t.total.toLocaleString()} <span style="font-size:12px;font-weight:400;color:var(--text-muted)">คน</span></div>
         </div>
         <div style="background:#e8f0fb;border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
-          <div style="font-size:11px;color:#1a4f8a;margin-bottom:4px">% SET รวม</div>
+          <div style="font-size:11px;color:#1a4f8a;margin-bottom:4px">% นักเรียนพิการรวม</div>
           <div style="font-size:20px;font-weight:600;color:#1a4f8a">${calcPct(t.set,t.total).toFixed(2)}%</div>
         </div>
       </div>
@@ -1393,7 +1393,7 @@ function doPrint() {
   ];
 
   const topicDefs = [
-    { key:'p1', title:'ร้อยละนักเรียนในระบบ SET ต่อนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% SET', color:'#1a4f8a' },
+    { key:'p1', title:'ร้อยละนักเรียนพิการต่อนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% นักเรียนพิการ', color:'#1a4f8a' },
 
     { key:'total', title:'จำนวนนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.totalStudents-a.totalStudents, valFn:r=>r.totalStudents, valLabel:'จำนวน (คน)', color:'#5b41b0' },
   ];
@@ -1444,7 +1444,7 @@ function doPrint() {
           <div style="font-size:18px;font-weight:700;color:#1a4f8a">${t.total.toLocaleString()}</div><div style="font-size:11px;color:#888">คน</div>
         </div>
         <div style="background:#e8f5f0;border-radius:6px;padding:10px 12px;text-align:center">
-          <div style="font-size:11px;color:#0d7c5f;margin-bottom:4px">% SET รวม</div>
+          <div style="font-size:11px;color:#0d7c5f;margin-bottom:4px">% นักเรียนพิการรวม</div>
           <div style="font-size:18px;font-weight:700;color:#0d7c5f">${calcPct(t.set,t.total).toFixed(2)}%</div><div style="font-size:11px;color:#888">${t.set.toLocaleString()} คน</div>
         </div>
         <div style="background:#fef8e8;border-radius:6px;padding:10px 12px;text-align:center">
