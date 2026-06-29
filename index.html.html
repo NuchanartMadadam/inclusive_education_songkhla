@@ -240,9 +240,8 @@
       <div class="stat-card accent-blue"><div class="label"><i class="ti ti-school" style="font-size:13px;margin-right:4px"></i>โรงเรียนทั้งหมด</div><div class="value" id="ov-schools">—</div><div class="unit">แห่ง</div></div>
       <div class="stat-card accent-blue"><div class="label"><i class="ti ti-users" style="font-size:13px;margin-right:4px"></i>นักเรียนทั้งหมด</div><div class="value" id="ov-students">—</div><div class="unit">คน</div></div>
       <div class="stat-card accent-green"><div class="label"><i class="ti ti-clipboard-check" style="font-size:13px;margin-right:4px"></i>นักเรียนในระบบ SET</div><div class="value" id="ov-set">—</div><div class="unit">คน</div></div>
-      <div class="stat-card accent-amber"><div class="label"><i class="ti ti-ticket" style="font-size:13px;margin-right:4px"></i>ขอรับคูปองการศึกษา</div><div class="value" id="ov-coupon">—</div><div class="unit">คน</div></div>
       <div class="stat-card accent-green"><div class="label">% SET ต่อนักเรียนทั้งหมด</div><div class="value" id="ov-pct-set">—</div><div class="unit">%</div></div>
-      <div class="stat-card accent-amber"><div class="label">% คูปองต่อนักเรียนทั้งหมด</div><div class="value" id="ov-pct-coupon">—</div><div class="unit">%</div></div>
+      <div class="stat-card accent-amber"><div class="label"><i class="ti ti-file-text" style="font-size:13px;margin-right:4px"></i>นักเรียนในระบบ IEP ออนไลน์</div><div class="value" id="ov-iep">—</div><div class="unit">คน</div></div>
     </div>
 
     <div class="sector-cards" id="sector-overview-cards">
@@ -430,8 +429,6 @@
       <div style="display:flex;flex-wrap:wrap;gap:6px" id="print-topic-checks">
         <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="summary"><i class="ti ti-check" style="font-size:13px"></i>สรุปภาพรวม</div>
         <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="p1"><i class="ti ti-check" style="font-size:13px"></i>อันดับ % SET/นักเรียนทั้งหมด</div>
-        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="p2"><i class="ti ti-check" style="font-size:13px"></i>อันดับ % คูปองการศึกษา/นักเรียนทั้งหมด</div>
-        <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="p3"><i class="ti ti-check" style="font-size:13px"></i>อันดับ % คูปองการศึกษา/SET</div>
         <div class="print-check selected" onclick="togglePrintCheck(this)" data-value="total"><i class="ti ti-check" style="font-size:13px"></i>อันดับจำนวนนักเรียน</div>
       </div>
     </div>
@@ -504,8 +501,8 @@
       <input type="number" id="f-set" placeholder="0" min="0">
     </div>
     <div class="form-group">
-      <label>จำนวนนักเรียนขอรับคูปองการศึกษา</label>
-      <input type="number" id="f-coupon" placeholder="0" min="0">
+      <label>จำนวนนักเรียนจำนวนนักเรียนในระบบ IEP ออนไลน์</label>
+      <input type="number" id="f-iep" placeholder="0" min="0">
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal()">ยกเลิก</button>
@@ -530,7 +527,7 @@ let editingId = null;
 let currentSppZone = 'spp1';
 let searchTerms = {};
 // ===== ฝัง URL ของ Apps Script ที่นี่เพื่อให้ทุกเครื่องใช้งานได้ทันที =====
-const EMBEDDED_API_URL = 'https://script.google.com/macros/s/AKfycbz0zvGMnjJuG8WMdYTOnwy418TEQyn49BfjLsc7Z8Bj__6LQlPYxKBF8749CXtXxflZ0Q/exec'; // <-- วาง URL ของ Apps Script ของท่านตรงนี้
+const EMBEDDED_API_URL = ''; // <-- วาง URL ของ Apps Script ของท่านตรงนี้
 // =========================================================================
 let apiUrl = EMBEDDED_API_URL || localStorage.getItem('gs_api_url') || '';
 
@@ -630,7 +627,7 @@ function getSectorData(key) {
     id: r.id || String(i + 1),
     totalStudents: Number(r.totalStudents) || 0,
     setStudents: Number(r.setStudents) || 0,
-    couponStudents: Number(r.couponStudents) || 0
+    iepStudents: Number(r.iepStudents) || 0
   }));
 }
 
@@ -640,26 +637,26 @@ function sectorTotals(key) {
     schools: a.schools + 1,
     total: a.total + r.totalStudents,
     set: a.set + r.setStudents,
-    coupon: a.coupon + r.couponStudents
-  }), { schools: 0, total: 0, set: 0, coupon: 0 });
+    iep: a.iep + r.iepStudents
+  }), { schools: 0, total: 0, set: 0, iep: 0 });
 }
 
 function renderOverview() {
   const keys = Object.keys(SECTORS);
-  let grand = { schools: 0, total: 0, set: 0, coupon: 0 };
+  let grand = { schools: 0, total: 0, set: 0, iep: 0 };
   keys.forEach(k => {
     const t = sectorTotals(k);
     grand.schools += t.schools;
     grand.total += t.total;
     grand.set += t.set;
-    grand.coupon += t.coupon;
+    grand.iep += t.iep;
   });
   document.getElementById('ov-schools').textContent = grand.schools.toLocaleString();
   document.getElementById('ov-students').textContent = grand.total.toLocaleString();
   document.getElementById('ov-set').textContent = grand.set.toLocaleString();
-  document.getElementById('ov-coupon').textContent = grand.coupon.toLocaleString();
+  document.getElementById('ov-iep').textContent = grand.iep.toLocaleString();
   document.getElementById('ov-pct-set').textContent = calcPct(grand.set, grand.total).toFixed(1);
-  document.getElementById('ov-pct-coupon').textContent = calcPct(grand.coupon, grand.total).toFixed(1);
+  document.getElementById('ov-pct-iep').textContent = calcPct(grand.iep, grand.total).toFixed(1);
 
   const container = document.getElementById('sector-overview-cards');
   if (!apiUrl) {
@@ -670,10 +667,10 @@ function renderOverview() {
   function renderSectorCard(label, keys, icon, colorCls, page, zone) {
     const t = keys.reduce((a, k) => {
       const s = sectorTotals(k);
-      return { schools: a.schools+s.schools, total: a.total+s.total, set: a.set+s.set, coupon: a.coupon+s.coupon };
-    }, { schools:0, total:0, set:0, coupon:0 });
+      return { schools: a.schools+s.schools, total: a.total+s.total, set: a.set+s.set, iep: a.iep+s.iep };
+    }, { schools:0, total:0, set:0, iep:0 });
     const pctSet = calcPct(t.set, t.total);
-    const pctCoupon = calcPct(t.coupon, t.total);
+    const pctIep = calcPct(t.iep, t.total);
     const clickFn = zone ? `navToSectorZone('${page}','${zone}')` : `navToSector('${page}')`;
     return `
     <div class="sector-card" onclick="${clickFn}">
@@ -692,10 +689,10 @@ function renderOverview() {
           <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctSet.toFixed(1)}% ของนักเรียนทั้งหมด</div>
         </div>
         <div class="sec-stat">
-          <div class="s-label">คูปองการศึกษา</div>
-          <div class="s-val">${t.coupon.toLocaleString()} คน</div>
-          <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pctCoupon,100)}%;background:#b87714"></div></div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctCoupon.toFixed(1)}% ของนักเรียนทั้งหมด</div>
+          <div class="s-label">IEP ออนไลน์</div>
+          <div class="s-val">${t.iep.toLocaleString()} คน</div>
+          <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pctIep,100)}%;background:#b87714"></div></div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctIep.toFixed(1)}% ของนักเรียนทั้งหมด</div>
         </div>
       </div>
     </div>`;
@@ -716,15 +713,15 @@ function renderOverview() {
   // Overall สพป summary bar
   const sppAll = ['spp1','spp2','spp3'].reduce((a, k) => {
     const s = sectorTotals(k);
-    return { schools: a.schools+s.schools, total: a.total+s.total, set: a.set+s.set, coupon: a.coupon+s.coupon };
-  }, { schools:0, total:0, set:0, coupon:0 });
+    return { schools: a.schools+s.schools, total: a.total+s.total, set: a.set+s.set, iep: a.iep+s.iep };
+  }, { schools:0, total:0, set:0, iep:0 });
 
   container.innerHTML = `
     <div style="grid-column:1/-1">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:6px">
           <i class="ti ti-building-school"></i>สพป.สงขลา
-          <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px">${sppAll.schools} โรงเรียน รวม ${sppAll.total.toLocaleString()} คน · SET ${calcPct(sppAll.set,sppAll.total).toFixed(1)}% · คูปองการศึกษา ${calcPct(sppAll.coupon,sppAll.total).toFixed(1)}%</span>
+          <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px">${sppAll.schools} โรงเรียน รวม ${sppAll.total.toLocaleString()} คน · SET ${calcPct(sppAll.set,sppAll.total).toFixed(1)}% · IEP ออนไลน์ ${calcPct(sppAll.iep,sppAll.total).toFixed(1)}%</span>
         </div>
         <button class="btn btn-outline btn-sm" onclick="navToSector('spp')">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button>
       </div>
@@ -763,14 +760,42 @@ function navToSectorZone(page, zone) {
   }, 30);
 }
 
+function sortTable(sectorKey, field) {
+  const cur = sortStates[sectorKey] || { field: null, dir: 'asc' };
+  const newDir = (cur.field === field && cur.dir === 'asc') ? 'desc' : 'asc';
+  sortStates[sectorKey] = { field, dir: newDir };
+  renderSectorTable(sectorKey);
+}
+
+function applySortAndFilter(sectorKey, data) {
+  const term = (searchTerms[sectorKey] || '').toLowerCase();
+  let result = term ? data.filter(r => r.schoolName.toLowerCase().includes(term)) : [...data];
+  const st = sortStates[sectorKey];
+  if (st && st.field) {
+    result.sort((a, b) => {
+      let va, vb;
+      if (st.field === 'pct1') { va = calcPct(a.setStudents, a.totalStudents); vb = calcPct(b.setStudents, b.totalStudents); }
+      else if (st.field === 'schoolName') { va = a.schoolName; vb = b.schoolName; return st.dir === 'asc' ? va.localeCompare(vb,'th') : vb.localeCompare(va,'th'); }
+      else { va = Number(a[st.field])||0; vb = Number(b[st.field])||0; }
+      return st.dir === 'asc' ? va - vb : vb - va;
+    });
+  }
+  return result;
+}
+
+function getSortIcon(sectorKey, field) {
+  const st = sortStates[sectorKey];
+  if (!st || st.field !== field) return '⇅';
+  return st.dir === 'asc' ? '↑' : '↓';
+}
+
 function renderSectorTable(sectorKey) {
   const wrapId = sectorKey.startsWith('spp') ? 'spp-table-wrap' : sectorKey+'-table-wrap';
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
   if (!apiUrl) { wrap.innerHTML = `<div class="no-data"><i class="ti ti-settings"></i>กรุณาตั้งค่า URL ก่อน</div>`; return; }
   const data = getSectorData(sectorKey);
-  const term = (searchTerms[sectorKey] || '').toLowerCase();
-  const filtered = term ? data.filter(r => r.schoolName.toLowerCase().includes(term)) : data;
+  const filtered = applySortAndFilter(sectorKey, data);
 
   const addBtn = sectorKey.startsWith('spp') ? '' : '';
 
@@ -793,30 +818,26 @@ function renderSectorTable(sectorKey) {
       <thead>
         <tr>
           <th>#</th>
-          <th>ชื่อโรงเรียน</th>
-          <th>นักเรียนทั้งหมด</th>
-          <th>${['skr','sch'].includes(sectorKey) ? 'นักเรียนพิการทั้งหมด' : 'ระบบ SET'}</th>
-          <th>${['skr','sch'].includes(sectorKey) ? '% นักเรียนพิการ/ทั้งหมด' : '% SET/ทั้งหมด'}</th>
-          <th>คูปองการศึกษา</th>
-          <th>% คูปองการศึกษา/ทั้งหมด</th>
-          <th>${['skr','sch'].includes(sectorKey) ? '% คูปองการศึกษา/นักเรียนพิการ' : '% คูปองการศึกษา/SET'}</th>
+          <th onclick="sortTable('${sectorKey}','schoolName')" style="cursor:pointer;user-select:none">ชื่อโรงเรียน <span id="sort-icon-${sectorKey}-schoolName">${getSortIcon(sectorKey,"schoolName")}</span></th>
+          <th onclick="sortTable('${sectorKey}','totalStudents')" style="cursor:pointer;user-select:none">นักเรียนทั้งหมด <span id="sort-icon-${sectorKey}-totalStudents">${getSortIcon(sectorKey,"totalStudents")}</span></th>
+          <th onclick="sortTable('${sectorKey}','setStudents')" style="cursor:pointer;user-select:none">${['skr','sch'].includes(sectorKey) ? 'นักเรียนพิการทั้งหมด' : 'ระบบ SET'} <span id="sort-icon-${sectorKey}-setStudents">${getSortIcon(sectorKey,"setStudents")}</span></th>
+          <th onclick="sortTable('${sectorKey}','pct1')" style="cursor:pointer;user-select:none">${['skr','sch'].includes(sectorKey) ? '% นักเรียนพิการ/ทั้งหมด' : '% SET/ทั้งหมด'} <span id="sort-icon-${sectorKey}-pct1">${getSortIcon(sectorKey,"pct1")}</span></th>
+          <th onclick="sortTable('${sectorKey}','iepStudents')" style="cursor:pointer;user-select:none">IEP ออนไลน์ <span id="sort-icon-${sectorKey}-iepStudents">${getSortIcon(sectorKey,"iepStudents")}</span></th>
           <th>จัดการ</th>
         </tr>
       </thead>
       <tbody>
         ${filtered.map((r, i) => {
           const p1 = calcPct(r.setStudents, r.totalStudents);
-          const p2 = calcPct(r.couponStudents, r.totalStudents);
-          const p3 = calcPct(r.couponStudents, r.setStudents);
+          const p2 = calcPct(r.iepStudents, r.totalStudents);
+          const p3 = calcPct(r.iepStudents, r.setStudents);
           return `<tr>
             <td style="color:var(--text-hint);font-size:13px">${i+1}</td>
             <td style="font-weight:500">${r.schoolName}</td>
             <td>${r.totalStudents.toLocaleString()}</td>
             <td>${r.setStudents.toLocaleString()}</td>
             <td>${pctBadge(p1)}</td>
-            <td>${r.couponStudents.toLocaleString()}</td>
-            <td>${pctBadge(p2)}</td>
-            <td>${pctBadge(p3)}</td>
+            <td>${r.iepStudents.toLocaleString()}</td>
             <td>
               <div class="action-btns">
                 ${adminUnlocked
@@ -860,8 +881,8 @@ function renderStats() {
       getSectorData(k).forEach(r => {
         rows.push({ ...r, sectorKey: k, sectorName: SECTORS[k].name,
           p1: calcPct(r.setStudents, r.totalStudents),
-          p2: calcPct(r.couponStudents, r.totalStudents),
-          p3: calcPct(r.couponStudents, r.setStudents)
+          p2: calcPct(r.iepStudents, r.totalStudents),
+          p3: calcPct(r.iepStudents, r.setStudents)
         });
       });
     });
@@ -880,7 +901,7 @@ function renderStats() {
             <th style="background:var(--bg);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);width:36px">#</th>
             <th style="background:var(--bg);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">ชื่อโรงเรียน</th>
             ${showSector ? '<th style="background:var(--bg);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)">สังกัด</th>' : ''}
-            <th style="background:var(--bg);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);width:140px">แผนภูมิ</th>
+
             <th style="background:var(--bg);padding:8px 12px;text-align:right;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);width:80px">${valLabel}</th>
           </tr>
         </thead>
@@ -895,9 +916,7 @@ function renderStats() {
               <td style="padding:9px 12px;font-size:13px;font-weight:500">${r.schoolName}</td>
               ${showSector ? `<td style="padding:9px 12px;font-size:12px;color:var(--text-muted)">${r.sectorName}</td>` : ''}
               <td style="padding:9px 12px">
-                <div style="background:var(--border);border-radius:3px;height:6px">
-                  <div style="background:${color};border-radius:3px;height:6px;width:${Math.min((val/Math.max(max,1))*100,100).toFixed(1)}%"></div>
-                </div>
+    
               </td>
               <td style="padding:9px 12px;text-align:right;font-size:13px;font-weight:600;color:${color}">${dispVal}</td>
             </tr>`;
@@ -915,18 +934,15 @@ function renderStats() {
     // summary bar
     const t = grp.keys.reduce((a,k) => {
       const s = sectorTotals(k);
-      return { schools:a.schools+s.schools, total:a.total+s.total, set:a.set+s.set, coupon:a.coupon+s.coupon };
-    }, {schools:0,total:0,set:0,coupon:0});
+      return { schools:a.schools+s.schools, total:a.total+s.total, set:a.set+s.set, iep:a.iep+s.iep };
+    }, {schools:0,total:0,set:0,iep:0});
 
     const sections = [
-      { id:'rs1', title:'% นักเรียนในระบบ SET ต่อนักเรียนทั้งหมด', icon:'ti-clipboard-check', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% SET', color:'#1a4f8a' },
-      { id:'rs2', title:'% นักเรียนขอรับคูปองต่อนักเรียนทั้งหมด', icon:'ti-ticket', sortFn:(a,b)=>b.p2-a.p2, valFn:r=>r.p2, valLabel:'% คูปองการศึกษา', color:'#b87714' },
-      { id:'rs3', title:'% นักเรียนขอรับคูปองต่อนักเรียนในระบบ SET', icon:'ti-chart-pie', sortFn:(a,b)=>b.p3-a.p3, valFn:r=>r.p3, valLabel:'% คูปองการศึกษา/SET', color:'#0d7c5f' },
-      { id:'rs4', title:'จำนวนนักเรียนทั้งหมด', icon:'ti-users', sortFn:(a,b)=>b.totalStudents-a.totalStudents, valFn:r=>r.totalStudents, valLabel:'จำนวน', color:'#5b41b0' },
+      { id:'rs1', title:'อันดับ % นักเรียนในระบบ SET ต่อนักเรียนทั้งหมด (จากมากไปน้อย)', icon:'ti-clipboard-check', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% SET', color:'#1a4f8a' },
     ];
 
     document.getElementById('stats-body').innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
         <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
           <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">โรงเรียน</div>
           <div style="font-size:20px;font-weight:600">${t.schools.toLocaleString()} <span style="font-size:12px;font-weight:400;color:var(--text-muted)">แห่ง</span></div>
@@ -938,10 +954,6 @@ function renderStats() {
         <div style="background:#e8f0fb;border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
           <div style="font-size:11px;color:#1a4f8a;margin-bottom:4px">% SET รวม</div>
           <div style="font-size:20px;font-weight:600;color:#1a4f8a">${calcPct(t.set,t.total).toFixed(1)}%</div>
-        </div>
-        <div style="background:var(--amber-light);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
-          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% คูปองการศึกษา รวม</div>
-          <div style="font-size:20px;font-weight:600;color:#b87714">${calcPct(t.coupon,t.total).toFixed(1)}%</div>
         </div>
       </div>
       ${sections.map(s => `
@@ -1014,7 +1026,7 @@ function _openAddModal(sector) {
   document.getElementById('f-name').value = '';
   document.getElementById('f-total').value = '';
   document.getElementById('f-set').value = '';
-  document.getElementById('f-coupon').value = '';
+  document.getElementById('f-iep').value = '';
   document.getElementById('modal').classList.add('open');
   document.getElementById('f-name').focus();
 }
@@ -1030,7 +1042,7 @@ function _openEditModal(sector, id) {
   document.getElementById('f-name').value = row.schoolName;
   document.getElementById('f-total').value = row.totalStudents;
   document.getElementById('f-set').value = row.setStudents;
-  document.getElementById('f-coupon').value = row.couponStudents;
+  document.getElementById('f-iep').value = row.iepStudents;
   document.getElementById('modal').classList.add('open');
 }
 
@@ -1041,7 +1053,7 @@ async function saveModal() {
     schoolName:     document.getElementById('f-name').value.trim(),
     totalStudents:  parseInt(document.getElementById('f-total').value) || 0,
     setStudents:    parseInt(document.getElementById('f-set').value) || 0,
-    couponStudents: parseInt(document.getElementById('f-coupon').value) || 0
+    iepStudents: parseInt(document.getElementById('f-iep').value) || 0
   };
   if (!data.schoolName) { alert('กรุณากรอกชื่อโรงเรียน'); return; }
 
@@ -1272,7 +1284,7 @@ const SHEET_NAME_MAP = {
   'spp1': 'สพป.สงขลา เขต1','spp2': 'สพป.สงขลา เขต2','spp3': 'สพป.สงขลา เขต3',
   'spm':  'สพม.สงขลา','skr':  'สกร.สงขลา','sch':  'สช.สงขลา'
 };
-const HEADERS = ['id','schoolName','totalStudents','setStudents','couponStudents'];
+const HEADERS = ['id','schoolName','totalStudents','setStudents','iepStudents'];
 function doGet(e) {
   const p = e.parameter; const action = p.action||'getAll'; const sector = p.sector||'';
   try {
@@ -1290,9 +1302,9 @@ function doPost(e) {
   } catch(err){return jsonResponse({error:err.message});}
 }
 function getSheet(k){const ss=SpreadsheetApp.getActiveSpreadsheet();const name=SHEET_NAME_MAP[k];let s=ss.getSheetByName(name);if(!s){s=ss.insertSheet(name);s.appendRow(HEADERS);}return s;}
-function getSheetData(k){const s=getSheet(k);const r=s.getDataRange().getValues();if(r.length<=1)return[];return r.slice(1).map(x=>({id:x[0],schoolName:x[1],totalStudents:Number(x[2])||0,setStudents:Number(x[3])||0,couponStudents:Number(x[4])||0}));}
-function addRow(k,d){const s=getSheet(k);s.appendRow([Date.now().toString(),d.schoolName,d.totalStudents,d.setStudents,d.couponStudents]);}
-function updateRow(k,id,d){const s=getSheet(k);const r=s.getDataRange().getValues();for(let i=1;i<r.length;i++){if(String(r[i][0])===String(id)){s.getRange(i+1,2,1,4).setValues([[d.schoolName,d.totalStudents,d.setStudents,d.couponStudents]]);return;}}}
+function getSheetData(k){const s=getSheet(k);const r=s.getDataRange().getValues();if(r.length<=1)return[];return r.slice(1).map(x=>({id:x[0],schoolName:x[1],totalStudents:Number(x[2])||0,setStudents:Number(x[3])||0,iepStudents:Number(x[4])||0}));}
+function addRow(k,d){const s=getSheet(k);s.appendRow([Date.now().toString(),d.schoolName,d.totalStudents,d.setStudents,d.iepStudents]);}
+function updateRow(k,id,d){const s=getSheet(k);const r=s.getDataRange().getValues();for(let i=1;i<r.length;i++){if(String(r[i][0])===String(id)){s.getRange(i+1,2,1,4).setValues([[d.schoolName,d.totalStudents,d.setStudents,d.iepStudents]]);return;}}}
 function deleteRow(k,id){const s=getSheet(k);const r=s.getDataRange().getValues();for(let i=1;i<r.length;i++){if(String(r[i][0])===String(id)){s.deleteRow(i+1);return;}}}
 function jsonResponse(d){return ContentService.createTextOutput(JSON.stringify(d)).setMimeType(ContentService.MimeType.JSON);}`;
   const a = document.createElement('a');
@@ -1383,8 +1395,7 @@ function doPrint() {
 
   const topicDefs = [
     { key:'p1', title:'ร้อยละนักเรียนในระบบ SET ต่อนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.p1-a.p1, valFn:r=>r.p1, valLabel:'% SET', color:'#1a4f8a' },
-    { key:'p2', title:'ร้อยละนักเรียนขอรับคูปองการศึกษาต่อนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.p2-a.p2, valFn:r=>r.p2, valLabel:'% คูปองการศึกษา', color:'#b87714' },
-    { key:'p3', title:'ร้อยละนักเรียนขอรับคูปองการศึกษาต่อนักเรียนในระบบ SET (จากมากไปน้อย)', sortFn:(a,b)=>b.p3-a.p3, valFn:r=>r.p3, valLabel:'% คูปองการศึกษา/SET', color:'#0d7c5f' },
+
     { key:'total', title:'จำนวนนักเรียนทั้งหมด (จากมากไปน้อย)', sortFn:(a,b)=>b.totalStudents-a.totalStudents, valFn:r=>r.totalStudents, valLabel:'จำนวน (คน)', color:'#5b41b0' },
   ];
 
@@ -1403,16 +1414,16 @@ function doPrint() {
       getSectorData(k).forEach(r => acc.push({
         ...r, sectorKey:k, sectorName:SECTORS[k].name,
         p1:calcPct(r.setStudents,r.totalStudents),
-        p2:calcPct(r.couponStudents,r.totalStudents),
-        p3:calcPct(r.couponStudents,r.setStudents)
+        p2:calcPct(r.iepStudents,r.totalStudents),
+        p3:calcPct(r.iepStudents,r.setStudents)
       }));
       return acc;
     }, []);
 
     const t = grp.keys.reduce((a,k)=>{
       const s=sectorTotals(k);
-      return {schools:a.schools+s.schools,total:a.total+s.total,set:a.set+s.set,coupon:a.coupon+s.coupon};
-    },{schools:0,total:0,set:0,coupon:0});
+      return {schools:a.schools+s.schools,total:a.total+s.total,set:a.set+s.set,iep:a.iep+s.iep};
+    },{schools:0,total:0,set:0,iep:0});
 
     if (!isFirstPage) html += '<div class="print-page-break"></div>';
     isFirstPage = false;
@@ -1438,8 +1449,8 @@ function doPrint() {
           <div style="font-size:18px;font-weight:700;color:#0d7c5f">${calcPct(t.set,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.set.toLocaleString()} คน</div>
         </div>
         <div style="background:#fef8e8;border-radius:6px;padding:10px 12px;text-align:center">
-          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% คูปองการศึกษา รวม</div>
-          <div style="font-size:18px;font-weight:700;color:#b87714">${calcPct(t.coupon,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.coupon.toLocaleString()} คน</div>
+          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% IEP ออนไลน์ รวม</div>
+          <div style="font-size:18px;font-weight:700;color:#b87714">${calcPct(t.iep,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.iep.toLocaleString()} คน</div>
         </div>
       </div>`;
     }
