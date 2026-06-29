@@ -203,8 +203,9 @@
     .main { padding: 16px; }
     .stat-grid { grid-template-columns: 1fr 1fr; }
     .rank-bar-wrap { display: none; }
-    th:nth-child(n+5) { display: none; }
-    td:nth-child(n+5) { display: none; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 600px; font-size: 12px; }
+    th, td { padding: 8px 10px; white-space: nowrap; }
   }
 </style>
 </head>
@@ -618,7 +619,7 @@ function calcPct(a, b) {
 
 function pctBadge(val) {
   const cls = val >= 70 ? 'pct-high' : val >= 40 ? 'pct-mid' : 'pct-low';
-  return `<span class="pct-badge ${cls}">${val.toFixed(1)}%</span>`;
+  return `<span class="pct-badge ${cls}">${val.toFixed(2)}%</span>`;
 }
 
 function getSectorData(key) {
@@ -656,7 +657,7 @@ function renderOverview() {
   document.getElementById('ov-students').textContent = grand.total.toLocaleString();
   document.getElementById('ov-set').textContent = grand.set.toLocaleString();
   document.getElementById('ov-iep').textContent = grand.iep.toLocaleString();
-  document.getElementById('ov-pct-set').textContent = calcPct(grand.set, grand.total).toFixed(1);
+  document.getElementById('ov-pct-set').textContent = calcPct(grand.set, grand.total).toFixed(2);
 
   const container = document.getElementById('sector-overview-cards');
   if (!apiUrl) {
@@ -686,13 +687,11 @@ function renderOverview() {
           <div class="s-label">${["skr","sch"].includes(keys[0]) ? "นักเรียนพิการทั้งหมด" : "ระบบ SET"}</div>
           <div class="s-val">${t.set.toLocaleString()} คน</div>
           <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pctSet,100)}%;background:#1a4f8a"></div></div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctSet.toFixed(1)}% ของนักเรียนทั้งหมด</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctSet.toFixed(2)}% ของนักเรียนทั้งหมด</div>
         </div>
         <div class="sec-stat">
           <div class="s-label">IEP Online</div>
           <div class="s-val">${t.iep.toLocaleString()} คน</div>
-          <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pctIep,100)}%;background:#b87714"></div></div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctIep.toFixed(1)}% ของนักเรียนทั้งหมด</div>
         </div>
       </div>
     </div>`;
@@ -721,7 +720,7 @@ function renderOverview() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:6px">
           <i class="ti ti-building-school"></i>สพป.สงขลา
-          <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px">${sppAll.schools} โรงเรียน รวม ${sppAll.total.toLocaleString()} คน · SET ${calcPct(sppAll.set,sppAll.total).toFixed(1)}% · IEP Online ${calcPct(sppAll.iep,sppAll.total).toFixed(1)}%</span>
+          <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px">${sppAll.schools} โรงเรียน รวม ${sppAll.total.toLocaleString()} คน · SET ${calcPct(sppAll.set,sppAll.total).toFixed(2)}% · IEP Online ${calcPct(sppAll.iep,sppAll.total).toFixed(2)}%</span>
         </div>
         <button class="btn btn-outline btn-sm" onclick="navToSector('spp')">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button>
       </div>
@@ -910,7 +909,7 @@ function renderStats() {
             const val = valFn(r);
             const rankCls = i===0 ? 'rank-1' : i===1 ? 'rank-2' : i===2 ? 'rank-3' : 'rank-n';
             const isPct = valLabel.includes('%');
-            const dispVal = isPct ? val.toFixed(1)+'%' : val.toLocaleString();
+            const dispVal = isPct ? val.toFixed(2)+'%' : val.toLocaleString();
             return `<tr style="border-bottom:1px solid var(--border)">
               <td style="padding:9px 12px"><div class="rank-num ${rankCls}" style="margin:0">${i+1}</div></td>
               <td style="padding:9px 12px;font-size:13px;font-weight:500">${r.schoolName}</td>
@@ -953,7 +952,7 @@ function renderStats() {
         </div>
         <div style="background:#e8f0fb;border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px">
           <div style="font-size:11px;color:#1a4f8a;margin-bottom:4px">% SET รวม</div>
-          <div style="font-size:20px;font-weight:600;color:#1a4f8a">${calcPct(t.set,t.total).toFixed(1)}%</div>
+          <div style="font-size:20px;font-weight:600;color:#1a4f8a">${calcPct(t.set,t.total).toFixed(2)}%</div>
         </div>
       </div>
       ${sections.map(s => `
@@ -1363,7 +1362,7 @@ function buildPrintRankTable(rows, sortFn, valFn, valLabel, color, sectorLabel) 
       ${sorted.map((r,i) => {
         const val = valFn(r);
         const isPct = valLabel.includes('%');
-        const dispVal = isPct ? val.toFixed(1)+'%' : val.toLocaleString();
+        const dispVal = isPct ? val.toFixed(2)+'%' : val.toLocaleString();
         return `<tr style="${i%2===0?'background:#fff':'background:#f8f9fc'}">
           <td style="padding:5px 8px;border:1px solid #ddd;text-align:center;font-weight:600;color:${i<3?color:'#888'}">${i+1}</td>
           <td style="padding:5px 8px;border:1px solid #ddd">${r.schoolName}</td>
@@ -1446,11 +1445,11 @@ function doPrint() {
         </div>
         <div style="background:#e8f5f0;border-radius:6px;padding:10px 12px;text-align:center">
           <div style="font-size:11px;color:#0d7c5f;margin-bottom:4px">% SET รวม</div>
-          <div style="font-size:18px;font-weight:700;color:#0d7c5f">${calcPct(t.set,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.set.toLocaleString()} คน</div>
+          <div style="font-size:18px;font-weight:700;color:#0d7c5f">${calcPct(t.set,t.total).toFixed(2)}%</div><div style="font-size:11px;color:#888">${t.set.toLocaleString()} คน</div>
         </div>
         <div style="background:#fef8e8;border-radius:6px;padding:10px 12px;text-align:center">
           <div style="font-size:11px;color:#b87714;margin-bottom:4px">% IEP Online รวม</div>
-          <div style="font-size:18px;font-weight:700;color:#b87714">${calcPct(t.iep,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.iep.toLocaleString()} คน</div>
+          <div style="font-size:18px;font-weight:700;color:#b87714">${calcPct(t.iep,t.total).toFixed(2)}%</div><div style="font-size:11px;color:#888">${t.iep.toLocaleString()} คน</div>
         </div>
       </div>`;
     }
