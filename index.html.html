@@ -241,7 +241,7 @@
       <div class="stat-card accent-blue"><div class="label"><i class="ti ti-users" style="font-size:13px;margin-right:4px"></i>นักเรียนทั้งหมด</div><div class="value" id="ov-students">—</div><div class="unit">คน</div></div>
       <div class="stat-card accent-green"><div class="label"><i class="ti ti-clipboard-check" style="font-size:13px;margin-right:4px"></i>นักเรียนในระบบ SET</div><div class="value" id="ov-set">—</div><div class="unit">คน</div></div>
       <div class="stat-card accent-green"><div class="label">% SET ต่อนักเรียนทั้งหมด</div><div class="value" id="ov-pct-set">—</div><div class="unit">%</div></div>
-      <div class="stat-card accent-amber"><div class="label"><i class="ti ti-file-text" style="font-size:13px;margin-right:4px"></i>นักเรียนในระบบ IEP ออนไลน์</div><div class="value" id="ov-iep">—</div><div class="unit">คน</div></div>
+      <div class="stat-card accent-amber"><div class="label"><i class="ti ti-file-text" style="font-size:13px;margin-right:4px"></i>นักเรียนในระบบ IEP Online</div><div class="value" id="ov-iep">—</div><div class="unit">คน</div></div>
     </div>
 
     <div class="sector-cards" id="sector-overview-cards">
@@ -501,7 +501,7 @@
       <input type="number" id="f-set" placeholder="0" min="0">
     </div>
     <div class="form-group">
-      <label>จำนวนนักเรียนจำนวนนักเรียนในระบบ IEP ออนไลน์</label>
+      <label>จำนวนนักเรียนจำนวนนักเรียนในระบบ IEP Online</label>
       <input type="number" id="f-iep" placeholder="0" min="0">
     </div>
     <div class="modal-footer">
@@ -528,7 +528,7 @@ let currentSppZone = 'spp1';
 let searchTerms = {};
 let sortStates = {};
 // ===== ฝัง URL ของ Apps Script ที่นี่เพื่อให้ทุกเครื่องใช้งานได้ทันที =====
-const EMBEDDED_API_URL = ''; // <-- วาง URL ของ Apps Script ของท่านตรงนี้
+const EMBEDDED_API_URL = 'https://script.google.com/macros/s/AKfycbw8VDZz9QCMJwA2u3U3SeNzkfU1l_Us-9wcF2a4UF3KEkrm9DkbZRm43Ihy49IUXAfMfw/exec'; // <-- วาง URL ของ Apps Script ของท่านตรงนี้
 // =========================================================================
 let apiUrl = EMBEDDED_API_URL || localStorage.getItem('gs_api_url') || '';
 
@@ -689,7 +689,7 @@ function renderOverview() {
           <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctSet.toFixed(1)}% ของนักเรียนทั้งหมด</div>
         </div>
         <div class="sec-stat">
-          <div class="s-label">IEP ออนไลน์</div>
+          <div class="s-label">IEP Online</div>
           <div class="s-val">${t.iep.toLocaleString()} คน</div>
           <div class="pct-bar"><div class="pct-fill" style="width:${Math.min(pctIep,100)}%;background:#b87714"></div></div>
           <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${pctIep.toFixed(1)}% ของนักเรียนทั้งหมด</div>
@@ -721,7 +721,7 @@ function renderOverview() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div style="font-size:14px;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:6px">
           <i class="ti ti-building-school"></i>สพป.สงขลา
-          <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px">${sppAll.schools} โรงเรียน รวม ${sppAll.total.toLocaleString()} คน · SET ${calcPct(sppAll.set,sppAll.total).toFixed(1)}% · IEP ออนไลน์ ${calcPct(sppAll.iep,sppAll.total).toFixed(1)}%</span>
+          <span style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px">${sppAll.schools} โรงเรียน รวม ${sppAll.total.toLocaleString()} คน · SET ${calcPct(sppAll.set,sppAll.total).toFixed(1)}% · IEP Online ${calcPct(sppAll.iep,sppAll.total).toFixed(1)}%</span>
         </div>
         <button class="btn btn-outline btn-sm" onclick="navToSector('spp')">ดูทั้งหมด <i class="ti ti-arrow-right"></i></button>
       </div>
@@ -822,7 +822,7 @@ function renderSectorTable(sectorKey) {
           <th onclick="sortTable('${sectorKey}','totalStudents')" style="cursor:pointer;user-select:none">นักเรียนทั้งหมด <span id="sort-icon-${sectorKey}-totalStudents">${getSortIcon(sectorKey,"totalStudents")}</span></th>
           <th onclick="sortTable('${sectorKey}','setStudents')" style="cursor:pointer;user-select:none">${['skr','sch'].includes(sectorKey) ? 'นักเรียนพิการทั้งหมด' : 'ระบบ SET'} <span id="sort-icon-${sectorKey}-setStudents">${getSortIcon(sectorKey,"setStudents")}</span></th>
           <th onclick="sortTable('${sectorKey}','pct1')" style="cursor:pointer;user-select:none">${['skr','sch'].includes(sectorKey) ? '% นักเรียนพิการ/ทั้งหมด' : '% SET/ทั้งหมด'} <span id="sort-icon-${sectorKey}-pct1">${getSortIcon(sectorKey,"pct1")}</span></th>
-          <th onclick="sortTable('${sectorKey}','iepStudents')" style="cursor:pointer;user-select:none">IEP ออนไลน์ <span id="sort-icon-${sectorKey}-iepStudents">${getSortIcon(sectorKey,"iepStudents")}</span></th>
+          <th onclick="sortTable('${sectorKey}','iepStudents')" style="cursor:pointer;user-select:none">IEP Online <span id="sort-icon-${sectorKey}-iepStudents">${getSortIcon(sectorKey,"iepStudents")}</span></th>
           <th>จัดการ</th>
         </tr>
       </thead>
@@ -1449,7 +1449,7 @@ function doPrint() {
           <div style="font-size:18px;font-weight:700;color:#0d7c5f">${calcPct(t.set,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.set.toLocaleString()} คน</div>
         </div>
         <div style="background:#fef8e8;border-radius:6px;padding:10px 12px;text-align:center">
-          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% IEP ออนไลน์ รวม</div>
+          <div style="font-size:11px;color:#b87714;margin-bottom:4px">% IEP Online รวม</div>
           <div style="font-size:18px;font-weight:700;color:#b87714">${calcPct(t.iep,t.total).toFixed(1)}%</div><div style="font-size:11px;color:#888">${t.iep.toLocaleString()} คน</div>
         </div>
       </div>`;
